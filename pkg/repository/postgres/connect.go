@@ -14,8 +14,10 @@ func dieIf(err error) {
 	}
 }
 
+// New() создает подключение к базе данных и возвращает пул соединений *sqlx.DB
 func New() *sqlx.DB {
-	db, err := sqlx.Connect("pgx", "host=localhost port=5433 user=mds_user password=zxcvbn dbname=mds sslmode=disable")
+	cfg := "host=localhost port=5433 user=mds_user password=zxcvbn dbname=mds sslmode=disable"
+	db, err := sqlx.Connect("pgx", cfg)
 	dieIf(err)
 
 	data, err := os.ReadFile("./schemas/v1/schema.sql")
