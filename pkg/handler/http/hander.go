@@ -6,6 +6,7 @@ func Route(app *fiber.App) {
 	// auth
 	auth := app.Group("/auth")
 	auth.Post("/signin", signin)
+	//auth.POST("/refresh", refresh)
 
 	client := app.Group("/client")
 	client.Post("/signup", signup_client)
@@ -15,25 +16,25 @@ func Route(app *fiber.App) {
 
 	// tariff
 	tariff := app.Group("/tariff")
-	tariff.Post("", nil)
-	tariff.Get("", nil)
-	tariff.Get("/{name}", nil)
-	tariff.Put("/{name}", nil)
-	tariff.Delete("/{name}", nil)
+	tariff.Post("", createTariff)
+	tariff.Get("", getAllTariff)
+	tariff.Get("/:name", getTariffByName)
+	tariff.Put("/:name", updateTariff)
+	tariff.Delete("/:name", deleteTariff)
 
 	// role
 	role := app.Group("/role")
-	role.Post("", nil)
-	role.Get("", nil)
-	role.Get("/{name}", nil)
-	role.Put("/{name}", nil)
-	role.Delete("/{name}", nil)
+	role.Post("", createRole)
+	role.Get("", getAllRole)
+	role.Get("/:name", getRoleByName)
+	role.Put("/:name", updateRole)
+	role.Delete("/:name", deleteRole)
 
 	// service
 	service := app.Group("/service")
-	service.Post("", nil)
-	service.Get("", nil)
-	service.Get("/{id}", nil)
-	service.Put("/{id}", nil)
-	service.Delete("/{id}", nil)
+	service.Post("", createService)
+	service.Get("", getAllService)
+	service.Get("/:id", getServiceById)
+	service.Put("/:id", updateService)
+	service.Delete("/:id", deleteService)
 }
