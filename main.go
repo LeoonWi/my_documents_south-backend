@@ -3,7 +3,7 @@ package main
 import (
 	"my_documents_south_backend/pkg/repository/postgres"
 	"my_documents_south_backend/pkg/service"
-	hHttp "my_documents_south_backend/pkg/transport/http"
+	mdsHttp "my_documents_south_backend/pkg/transport/http"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,7 +20,7 @@ func main() {
 
 	services := service.NewService(repository)
 
-	http_handler := hHttp.NewHttpHander(services)
+	http_handler := mdsHttp.NewHttpHander(services)
 	http_handler.Route(app)
 
 	if err := app.Listen(":3000"); err != nil {
