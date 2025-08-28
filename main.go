@@ -1,8 +1,9 @@
 package main
 
 import (
-	hHttp "my_documents_south_backend/pkg/handler/http"
 	"my_documents_south_backend/pkg/repository/postgres"
+	"my_documents_south_backend/pkg/service"
+	hHttp "my_documents_south_backend/pkg/transport/http"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -15,14 +16,14 @@ func main() {
 	db := postgres.New()
 	defer db.Close()
 
-	hHttp.Route(app)
+	repository := postgres.NewRepository(db)
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	services := service.NewService(repository)
+
+	http_handler := hHttp.NewHttpHander(services)
+	http_handler.Route(app)
 
 	if err := app.Listen(":3000"); err != nil {
 		panic(err)
 	}
-
 }

@@ -4,15 +4,15 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func signup_client(c *fiber.Ctx) error {
+func (h HttpHander) signup_client(c *fiber.Ctx) error {
 	return nil
 }
 
-func signup_employee(c *fiber.Ctx) error {
+func (h HttpHander) signup_employee(c *fiber.Ctx) error {
 	return nil
 }
 
-func signin(c *fiber.Ctx) error {
+func (h HttpHander) signin(c *fiber.Ctx) error {
 	return nil
 	//type User struct {
 	//	userID   int64
