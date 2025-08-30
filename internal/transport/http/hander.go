@@ -1,16 +1,16 @@
 package http
 
 import (
-	"my_documents_south_backend/pkg/service"
+	"my_documents_south_backend/internal/core/interfaces"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type HttpHander struct {
-	service *service.Service
+	service interfaces.ServiceFacade
 }
 
-func NewHttpHander(service *service.Service) *HttpHander {
+func NewHttpHander(service interfaces.ServiceFacade) *HttpHander {
 	return &HttpHander{service: service}
 }
 

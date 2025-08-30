@@ -1,9 +1,9 @@
 package main
 
 import (
-	"my_documents_south_backend/pkg/repository/postgres"
-	"my_documents_south_backend/pkg/service"
-	mdsHttp "my_documents_south_backend/pkg/transport/http"
+	"my_documents_south_backend/internal/core/facade"
+	postgres2 "my_documents_south_backend/internal/storage/postgres"
+	mdsHttp "my_documents_south_backend/internal/transport/http"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -13,12 +13,12 @@ func main() {
 		Immutable: true,
 	})
 
-	db := postgres.New()
+	db := postgres2.New()
 	defer db.Close()
 
-	repository := postgres.NewRepository(db)
+	repository := facade.NewRepository(db)
 
-	services := service.NewService(repository)
+	services := facade.NewService(repository)
 
 	http_handler := mdsHttp.NewHttpHander(services)
 	http_handler.Route(app)

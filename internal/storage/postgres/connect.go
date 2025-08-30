@@ -25,6 +25,8 @@ func New() *sqlx.DB {
 
 	schema := string(data)
 
-	db.Exec(schema)
+	if _, err := db.Exec(schema); nil != err {
+		dieIf(err)
+	}
 	return db
 }
