@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"my_documents_south_backend/internal/core/repositories"
 	"my_documents_south_backend/internal/model"
 )
@@ -13,6 +14,6 @@ func NewRoleService(repositories repositories.Postgres) *RoleService {
 	return &RoleService{repositories: repositories}
 }
 
-func (s *RoleService) CreateRole(name string) (*model.Role, error) {
+func (s *RoleService) CreateRole(ctx context.Context, name string) (*model.Role, error) {
 	return nil, nil
 }
