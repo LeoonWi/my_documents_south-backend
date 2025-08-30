@@ -5,9 +5,9 @@ import (
 )
 
 type EmployeeService struct {
-	repositories repositories.Repositories
+	repositories repositories.Postgres
 }
 
-func NewEmployeeService(repositories repositories.Repositories) *EmployeeService {
+func NewEmployeeService(repositories repositories.Postgres) *EmployeeService {
 	return &EmployeeService{repositories: repositories}
 }

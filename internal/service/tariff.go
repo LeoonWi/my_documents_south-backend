@@ -5,9 +5,9 @@ import (
 )
 
 type TariffService struct {
-	repositories repositories.Repositories
+	repositories repositories.Postgres
 }
 
-func NewTariffService(repositories repositories.Repositories) *TariffService {
+func NewTariffService(repositories repositories.Postgres) *TariffService {
 	return &TariffService{repositories: repositories}
 }

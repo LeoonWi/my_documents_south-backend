@@ -27,7 +27,7 @@ type (
 	}
 )
 
-func NewService(repositories *repositories.RepositoriesImpl) *ServiceImpl {
+func NewService(repositories *repositories.PostgresImpl) *ServiceImpl {
 	return &ServiceImpl{
 		employeeService:      service.NewEmployeeService(repositories),
 		employeeSpecsService: service.NewEmployeeSpecsService(repositories),

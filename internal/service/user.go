@@ -5,9 +5,9 @@ import (
 )
 
 type UserService struct {
-	repositories repositories.Repositories
+	repositories repositories.Postgres
 }
 
-func NewUserService(repositories repositories.Repositories) *UserService {
+func NewUserService(repositories repositories.Postgres) *UserService {
 	return &UserService{repositories: repositories}
 }

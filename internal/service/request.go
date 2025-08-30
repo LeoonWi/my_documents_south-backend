@@ -5,9 +5,9 @@ import (
 )
 
 type RequestService struct {
-	repositories repositories.Repositories
+	repositories repositories.Postgres
 }
 
-func NewRequestService(repositories repositories.Repositories) *RequestService {
+func NewRequestService(repositories repositories.Postgres) *RequestService {
 	return &RequestService{repositories: repositories}
 }

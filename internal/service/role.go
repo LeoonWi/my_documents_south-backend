@@ -5,9 +5,9 @@ import (
 )
 
 type RoleService struct {
-	repositories repositories.Repositories
+	repositories repositories.Postgres
 }
 
-func NewRoleService(repositories repositories.Repositories) *RoleService {
+func NewRoleService(repositories repositories.Postgres) *RoleService {
 	return &RoleService{repositories: repositories}
 }
