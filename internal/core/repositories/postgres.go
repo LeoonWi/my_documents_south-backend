@@ -9,11 +9,11 @@ import (
 
 type (
 	Postgres interface {
-		Employee() interfaces.EmployeeService
-		EmployeeSpecs() interfaces.EmployeeSpecsService
-		Request() interfaces.RequestService
-		Role() interfaces.RoleService
-		Service() interfaces.ServiceService
+		Employee() interfaces.EmployeeRepository
+		EmployeeSpecs() interfaces.EmployeeSpecsRepository
+		Request() interfaces.RequestRepository
+		Role() interfaces.RoleRepository
+		Service() interfaces.ServiceRepository
 		Tariff() interfaces.TariffRepository
 		User() interfaces.UserRepository
 	}
@@ -40,23 +40,23 @@ func NewRepositories(db *sqlx.DB) *PostgresImpl {
 	}
 }
 
-func (r *PostgresImpl) Employee() interfaces.EmployeeService {
+func (r *PostgresImpl) Employee() interfaces.EmployeeRepository {
 	return r.employeeRepository
 }
 
-func (r *PostgresImpl) EmployeeSpecs() interfaces.EmployeeSpecsService {
+func (r *PostgresImpl) EmployeeSpecs() interfaces.EmployeeSpecsRepository {
 	return r.employeeSpecsRepository
 }
 
-func (r *PostgresImpl) Request() interfaces.RequestService {
+func (r *PostgresImpl) Request() interfaces.RequestRepository {
 	return r.requestRepository
 }
 
-func (r *PostgresImpl) Role() interfaces.RoleService {
+func (r *PostgresImpl) Role() interfaces.RoleRepository {
 	return r.roleRepository
 }
 
-func (r *PostgresImpl) Service() interfaces.ServiceService {
+func (r *PostgresImpl) Service() interfaces.ServiceRepository {
 	return r.serviceRepository
 }
 
