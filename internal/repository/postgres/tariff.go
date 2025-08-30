@@ -1,6 +1,11 @@
 package postgres
 
-import "github.com/jmoiron/sqlx"
+import (
+	"context"
+	"my_documents_south_backend/internal/model"
+
+	"github.com/jmoiron/sqlx"
+)
 
 type TariffRepository struct {
 	Conn *sqlx.DB
@@ -8,4 +13,12 @@ type TariffRepository struct {
 
 func NewTariffRepository(db *sqlx.DB) *TariffRepository {
 	return &TariffRepository{Conn: db}
+}
+
+func (r *TariffRepository) CreateTariff(ctx context.Context, tariff *model.Tariff) error {
+	return nil
+}
+
+func (r *TariffRepository) GetTariffByName(ctx context.Context, name string, tariff *model.Tariff) error {
+	return nil
 }
