@@ -8,6 +8,7 @@ import (
 	"my_documents_south_backend/pkg/storage/postgres"
 
 	"github.com/bytedance/sonic"
+	"github.com/gofiber/contrib/swagger"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,6 +24,13 @@ func main() {
 		JSONEncoder: sonic.Marshal,
 		JSONDecoder: unmarshal,
 	})
+
+	app.Use(swagger.New(swagger.Config{
+		BasePath: "/",
+		FilePath: "./docs/swagger.yaml",
+		Path:     "docs/swagger",
+		Title:    "Swagger My Documents South API",
+	}))
 
 	db := postgres.New()
 	defer func(db *sqlx.DB) {

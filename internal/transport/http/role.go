@@ -38,7 +38,7 @@ func (h *HttpHander) getRoleById(c *fiber.Ctx) error {
 	role, err := h.service.Role().GetRoleById(c.Context(), id)
 	if err != nil {
 		res := model.NewErrorResponse(err, c.Path()).Log()
-		return c.Status(fiber.StatusBadRequest).JSON(res)
+		return c.Status(fiber.StatusNotFound).JSON(res)
 	}
 
 	return c.JSON(role)
