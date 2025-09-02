@@ -1,19 +1,27 @@
 package main
 
 import (
-	"github.com/jmoiron/sqlx"
 	"log"
 	"my_documents_south_backend/internal/core/repositories"
 	"my_documents_south_backend/internal/core/services"
 	mdsHttp "my_documents_south_backend/internal/transport/http"
 	"my_documents_south_backend/pkg/storage/postgres"
 
+	"github.com/bytedance/sonic"
+	"github.com/jmoiron/sqlx"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
+	unmarshal := func(buf []byte, val interface{}) error {
+		return sonic.Config{DisallowUnknownFields: true}.Froze().Unmarshal(buf, val)
+	}
+
 	app := fiber.New(fiber.Config{
-		Immutable: true,
+		Immutable:   true,
+		JSONEncoder: sonic.Marshal,
+		JSONDecoder: unmarshal,
 	})
 
 	db := postgres.New()

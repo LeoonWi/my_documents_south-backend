@@ -19,6 +19,10 @@ func (r *TariffRepository) CreateTariff(ctx context.Context, tariff *model.Tarif
 	return nil
 }
 
+func (r *TariffRepository) GetTariffById(ctx context.Context, id int, tariff *model.Tariff) error {
+	return nil
+}
+
 func (r *TariffRepository) GetTariffByName(ctx context.Context, name string, tariff *model.Tariff) error {
 	return nil
 }
