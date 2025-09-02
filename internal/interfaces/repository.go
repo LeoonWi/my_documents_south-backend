@@ -20,6 +20,7 @@ type RoleRepository interface {
 
 type ServiceRepository interface {
 	CreateService(ctx context.Context, service *model.Service) error
+	GetService(ctx context.Context, service *[]model.Service) error
 	GetServiceById(ctx context.Context, id int, service *model.Service) error
 	GetServiceByName(ctx context.Context, name string, service *model.Service) error
 }

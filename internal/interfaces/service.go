@@ -19,6 +19,8 @@ type RoleService interface {
 
 type ServiceService interface {
 	CreateService(ctx context.Context, name string) (*model.Service, error)
+	GetService(ctx context.Context) *[]model.Service
+	GetServiceById(ctx context.Context, id int) (*model.Service, error)
 }
 
 type TariffService interface {
