@@ -18,6 +18,11 @@ func NewServiceRepository(db *sqlx.DB) *ServiceRepository {
 func (r *ServiceRepository) CreateService(ctx context.Context, service *model.Service) error {
 	return nil
 }
+
+func (r *ServiceRepository) GetServiceById(ctx context.Context, id int, tariff *model.Service) error {
+	return nil
+}
+
 func (r *ServiceRepository) GetServiceByName(ctx context.Context, name string, service *model.Service) error {
 	return nil
 }
