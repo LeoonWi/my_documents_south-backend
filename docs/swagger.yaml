@@ -1,0 +1,214 @@
+openapi: 3.1.1
+info:
+  title: My Documents South API
+  version: "2"
+
+servers:
+  - url: http://localhost:3000
+    description: local server
+
+paths:
+  /roles:
+    post:
+      tags:
+        - Roles
+      summary: Создание роли
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: Возвращает созданный объект
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+        "422":
+          description: Некорректное тело запроса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Объект уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      tags:
+        - Roles
+      summary: Получение списка ролей
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/Role"
+                  - type: "null"
+
+  /roles/{id}:
+    get:
+      tags:
+        - Roles
+      summary: Получение роли по Id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int
+            example: 6
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+        "400":
+          description: Некорректный Id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Объект с переданным Id не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /service:
+    post:
+      tags:
+        - Service
+      summary: Создание сервиса
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: Возвращает созданный объект
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+        "422":
+          description: Некорректное тело запроса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Объект уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      tags:
+        - Sevices
+      summary: Получение списка сервисов
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/Service"
+                  - type: "null"
+
+  /service/{id}:
+    get:
+      tags:
+        - Service
+      summary: Получение сервиса по id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int
+            example: 6
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+        "400":
+          description: Некорректный Id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Объект с переданным Id не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        timestamp:
+          type: string
+          example: 0001-01-01T00:00:01.00001+03:00
+
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int
+        name:
+          type: string
+        created_at:
+          type: string
+          example: 0001-01-01T00:00:01.00001+03:00
+        updated_at:
+          type: string
+          example: 0001-01-01T00:00:01.00001+03:00
+
+    Service: 
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int
+        name:
+          type: string
+        created_at:
+          type: string
+          example: 0001-01-01T00:00:01.00001+03:00
+        updated_at:
+          type: string
+          example: 0001-01-01T00:00:01.00001+03:00

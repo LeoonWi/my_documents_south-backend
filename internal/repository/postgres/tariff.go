@@ -36,6 +36,7 @@ func (r *TariffRepository) GetTariffs(c context.Context, tariff *[]model.Tariff)
 	}
 	return nil
 }
+
 func (r *TariffRepository) GetTariffByID(c context.Context, id int, tariff *model.Tariff) error {
 	ctx, cancel := context.WithTimeout(c, 10*time.Second)
 	defer cancel()
@@ -79,6 +80,4 @@ func (r *TariffRepository) DeleteTariff(c context.Context, id int) error {
 	if rowsAffected == 0 {
 		return errors.New("tariff not found")
 	}
-
-	return nil
 }

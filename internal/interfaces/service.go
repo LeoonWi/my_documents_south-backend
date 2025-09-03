@@ -13,10 +13,14 @@ type RequestService interface{}
 
 type RoleService interface {
 	CreateRole(ctx context.Context, name string) (*model.Role, error)
+	GetRoles(ctx context.Context) *[]model.Role
+	GetRoleById(ctx context.Context, id int) (*model.Role, error)
 }
 
 type ServiceService interface {
 	CreateService(ctx context.Context, name string) (*model.Service, error)
+	GetService(ctx context.Context) *[]model.Service
+	GetServiceById(ctx context.Context, id int) (*model.Service, error)
 }
 
 type TariffService interface {
