@@ -26,9 +26,12 @@ type ServiceRepository interface {
 }
 
 type TariffRepository interface {
-	CreateTariff(ctx context.Context, role *model.Tariff) error
-	GetTariffById(ctx context.Context, id int, tariff *model.Tariff) error
+	CreateTariff(ctx context.Context, tariff *model.Tariff) error
+	GetTariffs(ctx context.Context, tariff *[]model.Tariff) error
+	GetTariffByID(ctx context.Context, id int, tariff *model.Tariff) error
 	GetTariffByName(ctx context.Context, name string, tariff *model.Tariff) error
+	UpdateTariff(ctx context.Context, tariff *model.Tariff) error
+	DeleteTariff(ctx context.Context, id int) error
 }
 
 type UserRepository interface{}
