@@ -21,6 +21,11 @@ type ServiceService interface {
 
 type TariffService interface {
 	CreateTariff(ctx context.Context, name string) (*model.Tariff, error)
+	GetTariffs(ctx context.Context) *[]model.Tariff
+	GetTariffByID(ctx context.Context, id int) (*model.Tariff, error)
+	GetTariffByName(ctx context.Context, name string) (*model.Tariff, error)
+	UpdateTariff(ctx context.Context, id int, name string) (*model.Tariff, error)
+	DeleteTariff(ctx context.Context, id int) error
 }
 
 type UserService interface{}

@@ -29,8 +29,9 @@ func (h HttpHander) Route(app *fiber.App) {
 	// tariff
 	tariff := app.Group("/tariff")
 	tariff.Post("", h.createTariff)
-	tariff.Get("", h.getAllTariff)
+	tariff.Get("/all", h.getAllTariff)
 	tariff.Get("/:id", h.getTariffById)
+	tariff.Get("/:name", h.getTariffByName)
 	tariff.Put("/:id", h.updateTariff)
 	tariff.Delete("/:id", h.deleteTariff)
 
