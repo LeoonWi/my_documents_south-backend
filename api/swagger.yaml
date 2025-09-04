@@ -139,7 +139,7 @@ paths:
                       $ref: "#/components/schemas/Service"
                   - type: "null"
 
-  /service/{id}:
+  /services/{id}:
     get:
       tags:
         - Services
