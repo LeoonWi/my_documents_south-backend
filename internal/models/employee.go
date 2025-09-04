@@ -1,6 +1,7 @@
 package models
 
 import (
+	"my_documents_south_backend/internal/interfaces"
 	"time"
 )
 
@@ -17,4 +18,12 @@ type Employee struct {
 	Active    bool      `json:"active" db:"active"`
 	CreatedAt time.Time `json:"created_at,omitempty" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at,omitempty" db:"updated_at"`
+}
+
+type EmployeeRepository interface {
+	interfaces.EntityRepository[Employee]
+}
+
+type EmployeeService interface {
+	interfaces.EntityService[Employee]
 }

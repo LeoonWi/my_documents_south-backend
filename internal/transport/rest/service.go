@@ -2,8 +2,13 @@ package rest
 
 import (
 	"errors"
-	"github.com/gofiber/fiber/v2"
 	"my_documents_south_backend/internal/models"
+	"my_documents_south_backend/internal/services"
+	"my_documents_south_backend/internal/storage/postgres/repository"
+	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/jmoiron/sqlx"
 )
 
 type ServiceHandler struct {
@@ -60,4 +65,17 @@ func (h *ServiceHandler) updateService(c *fiber.Ctx) error {
 func (h *ServiceHandler) deleteService(c *fiber.Ctx) error {
 	// TODO delete service handler
 	return nil
+}
+
+func ServiceRoute(db *sqlx.DB, group fiber.Router) {
+	repo := repository.NewServiceRepository(db)
+	service := services.NewServiceService(repo, 10*time.Second)
+	handler := NewServiceHandler(service)
+
+	tag := group.Group("/services")
+	tag.Post("", handler.createService)
+	tag.Get("", handler.getServices)
+	tag.Get("/:id", handler.getServiceById)
+	tag.Put("/:id", handler.updateService)
+	tag.Delete("/:id", handler.deleteService)
 }

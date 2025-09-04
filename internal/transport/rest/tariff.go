@@ -2,8 +2,13 @@ package rest
 
 import (
 	"errors"
-	"github.com/gofiber/fiber/v2"
 	"my_documents_south_backend/internal/models"
+	"my_documents_south_backend/internal/services"
+	"my_documents_south_backend/internal/storage/postgres/repository"
+	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/jmoiron/sqlx"
 )
 
 type TariffHandler struct {
@@ -91,7 +96,19 @@ func (h *TariffHandler) deleteTariff(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "tariff deleted successfully",
-		"id":      id,
+		"id": id,
 	})
+}
+
+func TariffRoute(db *sqlx.DB, group fiber.Router) {
+	repo := repository.NewTariffRepository(db)
+	service := services.NewTariffService(repo, 10*time.Second)
+	handler := NewTariffHandler(service)
+
+	tag := group.Group("/tariffs")
+	tag.Post("", handler.createTariff)
+	tag.Get("", handler.getTariffs)
+	tag.Get("/:id", handler.getTariffById)
+	tag.Put("/:id", handler.updateTariff)
+	tag.Delete("/:id", handler.deleteTariff)
 }

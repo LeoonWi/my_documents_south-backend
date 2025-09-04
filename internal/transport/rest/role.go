@@ -2,7 +2,13 @@ package rest
 
 import (
 	"errors"
+	"my_documents_south_backend/internal/services"
+	"my_documents_south_backend/internal/storage/postgres/repository"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/jmoiron/sqlx"
+
 	"my_documents_south_backend/internal/models"
 )
 
@@ -59,4 +65,17 @@ func (h *RoleHandler) updateRole(c *fiber.Ctx) error {
 func (h *RoleHandler) deleteRole(c *fiber.Ctx) error {
 	// TODO delete role handler
 	return nil
+}
+
+func RoleRoute(db *sqlx.DB, group fiber.Router) {
+	repo := repository.NewRoleRepository(db)
+	service := services.NewRoleService(repo, 10*time.Second)
+	handler := NewRoleHandler(service)
+
+	tag := group.Group("/roles")
+	tag.Post("", handler.createRole)
+	tag.Get("", handler.getRoles)
+	tag.Get("/:id", handler.getRoleById)
+	tag.Put("/:id", handler.updateRole)
+	tag.Delete("/:id", handler.deleteRole)
 }
