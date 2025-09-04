@@ -55,7 +55,7 @@ paths:
                   - type: array
                     items:
                       $ref: "#/components/schemas/Role"
-                  - type: "null"
+                  - type: 'null'
 
   /roles/{id}:
     get:
@@ -171,28 +171,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-/tariffs:
-    get:
-      summary: Получить список всех тарифов
-      tags: [Tariffs]
-      responses:
-        '200':
-          description: Список тарифов
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Tariff'
+
+  /tariffs:
     post:
-      summary: Создать новый тариф
+      summary: Создание тарифа
       tags: [Tariffs]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TariffCreateRequest'
+              type: object
+              properties:
+                name:
+                  type: string
       responses:
         '200':
           description: Созданный тариф
@@ -200,12 +192,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tariff'
-        '422':
-          description: Невалидное тело запроса
+        "422":
+          description: Некорректное тело запроса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Объект уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      summary: Получение списка тарифов
+      tags: [Tariffs]
+      responses:
+        '200':
+          description: Список тарифов
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/Tariff'
+                  - type: "null"
 
   /tariffs/{id}:
     get:
-      summary: Получить тариф по ID
+      summary: Получиение тарифа по id
       tags: [Tariffs]
       parameters:
         - name: id
@@ -222,8 +238,19 @@ paths:
                 $ref: '#/components/schemas/Tariff'
         '404':
           description: Тариф не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "400":
+          description: Некорректный id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
     put:
-      summary: Обновить тариф по ID
+      summary: Обновление тарифа по id
       tags: [Tariffs]
       parameters:
         - name: id
@@ -236,7 +263,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TariffUpdateRequest'
+              type: object
+              properties:
+                name:
+                  type: string
+                  format: int
       responses:
         '200':
           description: Обновлённый тариф
@@ -246,8 +277,19 @@ paths:
                 $ref: '#/components/schemas/Tariff'
         '404':
           description: Тариф не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "400":
+          description: Некорректный id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
     delete:
-      summary: Удалить тариф по ID
+      summary: Удаление тарифа по id
       tags: [Tariffs]
       parameters:
         - name: id
@@ -270,9 +312,17 @@ paths:
                     type: int
                     example: 3
         '400':
-          description: Неверный ID
+          description: Неверный id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Тариф не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
           
 components:
   schemas:
@@ -332,19 +382,3 @@ components:
           format: date-time
           nullable: true
           example: 2025-09-03T15:30:00Z
-
-    TariffCreateRequest:
-      type: object
-      required: [name]
-      properties:
-        name:
-          type: string
-          example: Premium
-
-    TariffUpdateRequest:
-      type: object
-      required: [name]
-      properties:
-        name:
-          type: string
-          example: Premium Plus
