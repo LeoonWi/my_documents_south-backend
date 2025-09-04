@@ -171,7 +171,109 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+/tariffs:
+    get:
+      summary: Получить список всех тарифов
+      tags: [Tariffs]
+      responses:
+        '200':
+          description: Список тарифов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tariff'
+    post:
+      summary: Создать новый тариф
+      tags: [Tariffs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TariffCreateRequest'
+      responses:
+        '200':
+          description: Созданный тариф
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tariff'
+        '422':
+          description: Невалидное тело запроса
 
+  /tariffs/{id}:
+    get:
+      summary: Получить тариф по ID
+      tags: [Tariffs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: int
+      responses:
+        '200':
+          description: Тариф найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tariff'
+        '404':
+          description: Тариф не найден
+    put:
+      summary: Обновить тариф по ID
+      tags: [Tariffs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: int
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TariffUpdateRequest'
+      responses:
+        '200':
+          description: Обновлённый тариф
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tariff'
+        '404':
+          description: Тариф не найден
+    delete:
+      summary: Удалить тариф по ID
+      tags: [Tariffs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: int
+      responses:
+        '200':
+          description: Тариф успешно удалён
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: tariff deleted successfully
+                  id:
+                    type: int
+                    example: 3
+        '400':
+          description: Неверный ID
+        '404':
+          description: Тариф не найден
+          
 components:
   schemas:
     Error:
@@ -212,3 +314,37 @@ components:
         updated_at:
           type: string
           example: 0001-01-01T00:00:01.00001+03:00
+    Tariff:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Standard
+        created_at:
+          type: string
+          format: date-time
+          example: 2025-09-01T12:00:00Z
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2025-09-03T15:30:00Z
+
+    TariffCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          example: Premium
+
+    TariffUpdateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          example: Premium Plus
