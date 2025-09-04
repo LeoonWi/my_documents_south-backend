@@ -90,10 +90,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /service:
+  /services:
     post:
       tags:
-        - Service
+        - Services
       summary: Создание сервиса
       requestBody:
         required: true
@@ -125,7 +125,7 @@ paths:
                 $ref: "#/components/schemas/Error"
     get:
       tags:
-        - Sevices
+        - Services
       summary: Получение списка сервисов
       responses:
         "200":
@@ -142,7 +142,7 @@ paths:
   /service/{id}:
     get:
       tags:
-        - Service
+        - Services
       summary: Получение сервиса по id
       parameters:
         - name: id
