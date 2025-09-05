@@ -2,9 +2,10 @@ package repository
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
 	"my_documents_south_backend/internal/models"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type serviceRepository struct {
@@ -50,7 +51,14 @@ func (r *serviceRepository) GetById(c context.Context, id int, service *models.S
 }
 
 func (r *serviceRepository) Update(c context.Context, service *models.Service) error {
-	// TODO update service repository
+	ctx, cancel := context.WithTimeout(c, 10*time.Second)
+	defer cancel()
+
+	err := r.conn.GetContext(ctx, service, "UPDATE service SET name = $1, updated_at = NOW() WHERE id = $2 RETURNING *;", service.Name, service.Id)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

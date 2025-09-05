@@ -58,8 +58,28 @@ func (h *ServiceHandler) getServiceById(c *fiber.Ctx) error {
 }
 
 func (h *ServiceHandler) updateService(c *fiber.Ctx) error {
-	// TODO update service handler
-	return nil
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusBadRequest).JSON(res)
+	}
+
+	var req struct {
+		Name string `json:"name"`
+	}
+
+	if err := c.BodyParser(&req); err != nil || req.Name == "" {
+		res := models.NewErrorResponse(errors.New("invalid body"), c.Path()).Log()
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(res)
+	}
+
+	service, err := h.service.Update(c.Context(), id, req.Name)
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusNotFound).JSON(res)
+	}
+
+	return c.JSON(service)
 }
 
 func (h *ServiceHandler) deleteService(c *fiber.Ctx) error {
