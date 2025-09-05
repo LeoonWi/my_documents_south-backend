@@ -50,8 +50,16 @@ func (s *serviceService) GetById(ctx context.Context, id int) (*models.Service, 
 }
 
 func (s *serviceService) Update(c context.Context, id int, name string) (*models.Service, error) {
-	// TODO update service service
-	return nil, nil
+	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	defer cancel()
+
+	service := &models.Service{Id: id, Name: name}
+
+	if err := s.serviceRepository.Update(ctx, service); err != nil {
+		return nil, err
+	}
+
+	return service, nil
 }
 
 func (s *serviceService) Delete(c context.Context, id int) error {
