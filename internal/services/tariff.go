@@ -45,7 +45,7 @@ func (s *tariffService) GetById(c context.Context, id int) (*models.Tariff, erro
 	defer cancel()
 
 	if id < 1 {
-		return nil, errors.New("Некорректное значение id")
+		return nil, errors.New("invalid id")
 	}
 
 	tariff := &models.Tariff{Id: id}

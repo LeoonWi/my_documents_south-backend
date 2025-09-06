@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"my_documents_south_backend/internal/models"
 	"my_documents_south_backend/internal/services"
 	"my_documents_south_backend/internal/storage/postgres/repository"
@@ -19,28 +20,89 @@ func NewUserHandler(userService models.UserService) *UserHandler {
 }
 
 func (h *UserHandler) createUser(c *fiber.Ctx) error {
-	// TODO create user handler
-	return nil
+	var req struct {
+		Name       string `json:"name"`
+		LastName   string `json:"last_name"`
+		MiddleName string `json:"middle_name"`
+		Email      string `json:"email"`
+		Phone      string `json:"phone"`
+		Password   string `json:"password"`
+		Inn        string `json:"inn"`
+		Snils      string `json:"snils"`
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		res := models.NewErrorResponse(errors.New("invalid body"), c.Path()).Log()
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(res)
+	}
+
+	user := &models.User{
+		Name:       req.Name,
+		LastName:   req.LastName,
+		MiddleName: req.MiddleName,
+		Email:      req.Email,
+		Phone:      req.Phone,
+		Inn:        req.Inn,
+		Snils:      req.Snils,
+	}
+
+	_, err := h.userService.Create(c.Context(), user, req.Password)
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusConflict).JSON(res)
+	}
+
+	return c.SendStatus(fiber.StatusCreated)
 }
 
 func (h *UserHandler) getUsers(c *fiber.Ctx) error {
 	// TODO get users handler
-	return nil
+	return c.JSON(h.userService.Get(c.Context()))
 }
 
 func (h *UserHandler) getUserById(c *fiber.Ctx) error {
-	// TODO get user by id
-	return nil
+	id, err := c.ParamsInt("id", 0)
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusBadRequest).JSON(res)
+	}
+
+	user, err := h.userService.GetById(c.Context(), id)
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusNotFound).JSON(res)
+	}
+
+	return c.JSON(user)
 }
 
 func (h *UserHandler) deleteUser(c *fiber.Ctx) error {
-	// TODO delete user
-	return nil
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		res := models.NewErrorResponse(errors.New("invalid id"), c.Path()).Log()
+		return c.Status(fiber.StatusBadRequest).JSON(res)
+	}
+
+	err = h.userService.Delete(c.Context(), id)
+	if err != nil {
+		status := fiber.StatusInternalServerError
+		if err.Error() == "user not found" {
+			status = fiber.StatusNotFound
+		}
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(status).JSON(res)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"id": id,
+	})
 }
 
 func ClientRoute(db *sqlx.DB, group fiber.Router) {
 	repo := repository.NewUserRepository(db)
-	service := services.NewUserService(repo, 10*time.Second)
+	//потребовалось создать еще одну ссылку на репозиторий
+	repo2 := repository.NewTariffRepository(db)
+	service := services.NewUserService(repo, repo2, 10*time.Second)
 	handler := NewUserHandler(service)
 
 	tag := group.Group("/users")

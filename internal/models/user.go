@@ -16,10 +16,10 @@ type User struct {
 	TariffId int    `json:"tariff_id,omitempty" db:"tariff_id"`
 	Tariff   Tariff `json:"tariff,omitempty" db:"-"`
 
-	Inn       string    `json:"inn,omitempty" db:"inn"`
-	Snils     string    `json:"snils,omitempty" db:"snils"`
-	CreatedAt time.Time `json:"created_at,omitempty" db:"created_at"`
-	UpdatedAt time.Time `json:"updated_at,omitempty" db:"updated_at"`
+	Inn       string     `json:"inn,omitempty" db:"inn"`
+	Snils     string     `json:"snils,omitempty" db:"snils"`
+	CreatedAt time.Time  `json:"created_at,omitempty" db:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty" db:"updated_at"`
 }
 
 type UserRepository interface {
@@ -27,5 +27,5 @@ type UserRepository interface {
 }
 
 type UserService interface {
-	interfaces.EntityService[User]
+	interfaces.EntityServiceUser[User]
 }

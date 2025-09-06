@@ -4,6 +4,7 @@ go 1.24.2
 
 require (
 	github.com/bytedance/sonic v1.14.1
+	github.com/dongri/phonenumber v0.1.12
 	github.com/gofiber/contrib/jwt v1.1.2
 	github.com/gofiber/contrib/swagger v1.3.0
 	github.com/gofiber/fiber/v2 v2.52.9
