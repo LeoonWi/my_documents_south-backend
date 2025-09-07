@@ -14,8 +14,8 @@ type User struct {
 	Phone      string `json:"phone,omitempty" db:"phone"`
 	Password   string `json:"password,omitempty" db:"password"`
 
-	TariffId int    `json:"tariff_id,omitempty" db:"tariff_id"`
-	Tariff   Tariff `json:"tariff,omitempty" db:"-"`
+	TariffId int     `json:"tariff_id,omitempty" db:"tariff_id"`
+	Tariff   *Tariff `json:"tariff,omitempty" db:"tariff"`
 
 	Inn       string     `json:"inn,omitempty" db:"inn"`
 	Snils     string     `json:"snils,omitempty" db:"snils"`
