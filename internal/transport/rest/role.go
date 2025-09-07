@@ -21,20 +21,20 @@ func NewRoleHandler(roleService models.RoleService) *RoleHandler {
 }
 
 func (h *RoleHandler) createRole(c *fiber.Ctx) error {
-	role := &models.Role{}
+	var role models.Role
 
-	if err := c.BodyParser(role); err != nil {
+	if err := c.BodyParser(&role); err != nil {
 		res := models.NewErrorResponse(errors.New("Некорретное тело запроса"), c.Path()).Log()
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(res)
 	}
 
-	role, err := h.service.Create(c.Context(), role.Name)
+	err := h.service.Create(c.Context(), &role)
 	if err != nil {
 		res := models.NewErrorResponse(err, c.Path()).Log()
 		return c.Status(fiber.StatusConflict).JSON(res)
 	}
 
-	return c.JSON(role)
+	return c.JSON(&role)
 }
 
 func (h *RoleHandler) getRoles(c *fiber.Ctx) error {

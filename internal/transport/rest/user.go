@@ -20,33 +20,14 @@ func NewUserHandler(userService models.UserService) *UserHandler {
 }
 
 func (h *UserHandler) createUser(c *fiber.Ctx) error {
-	var req struct {
-		Name       string `json:"name"`
-		LastName   string `json:"last_name"`
-		MiddleName string `json:"middle_name"`
-		Email      string `json:"email"`
-		Phone      string `json:"phone"`
-		Password   string `json:"password"`
-		Inn        string `json:"inn"`
-		Snils      string `json:"snils"`
-	}
+	var user models.User
 
-	if err := c.BodyParser(&req); err != nil {
+	if err := c.BodyParser(&user); err != nil {
 		res := models.NewErrorResponse(errors.New("invalid body"), c.Path()).Log()
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(res)
 	}
 
-	user := &models.User{
-		Name:       req.Name,
-		LastName:   req.LastName,
-		MiddleName: req.MiddleName,
-		Email:      req.Email,
-		Phone:      req.Phone,
-		Inn:        req.Inn,
-		Snils:      req.Snils,
-	}
-
-	_, err := h.userService.Create(c.Context(), user, req.Password)
+	err := h.userService.Create(c.Context(), &user)
 	if err != nil {
 		res := models.NewErrorResponse(err, c.Path()).Log()
 		return c.Status(fiber.StatusConflict).JSON(res)

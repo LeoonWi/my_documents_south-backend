@@ -16,19 +16,22 @@ func NewServiceService(serviceRepository models.ServiceRepository, contextTimeou
 	return &serviceService{serviceRepository: serviceRepository, contextTimeout: contextTimeout}
 }
 
-func (s *serviceService) Create(ctx context.Context, name string) (*models.Service, error) {
-	service := models.Service{Name: name}
+func (s *serviceService) Create(c context.Context, service *models.Service) error {
+	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	defer cancel()
 
-	if err := s.serviceRepository.Create(ctx, &service); err != nil {
-		return nil, err
+	if err := s.serviceRepository.Create(ctx, service); err != nil {
+		return err
 	}
 
-	return &service, nil
+	return nil
 }
 
-func (s *serviceService) Get(ctx context.Context) *[]models.Service {
-	var service []models.Service
+func (s *serviceService) Get(c context.Context) *[]models.Service {
+	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	defer cancel()
 
+	var service []models.Service
 	if err := s.serviceRepository.Get(ctx, &service); err != nil {
 		return nil
 	}
@@ -36,7 +39,10 @@ func (s *serviceService) Get(ctx context.Context) *[]models.Service {
 	return &service
 }
 
-func (s *serviceService) GetById(ctx context.Context, id int) (*models.Service, error) {
+func (s *serviceService) GetById(c context.Context, id int) (*models.Service, error) {
+	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	defer cancel()
+
 	if id < 1 {
 		return nil, errors.New("Некорректное значение id")
 	}
@@ -49,9 +55,9 @@ func (s *serviceService) GetById(ctx context.Context, id int) (*models.Service, 
 	return &service, nil
 }
 
-func (s *serviceService) Update(c context.Context, id int, name string) (*models.Service, error) {
+func (s *serviceService) Update(c context.Context, id int, service *models.Service) error {
 	// TODO update service service
-	return nil, nil
+	return nil
 }
 
 func (s *serviceService) Delete(c context.Context, id int) error {

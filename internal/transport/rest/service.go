@@ -20,21 +20,21 @@ func NewServiceHandler(service models.ServiceService) *ServiceHandler {
 }
 
 func (h *ServiceHandler) createService(c *fiber.Ctx) error {
-	service := &models.Service{}
+	var service models.Service
 
-	if err := c.BodyParser(service); err != nil {
+	if err := c.BodyParser(&service); err != nil {
 		res := models.NewErrorResponse(errors.New("Некорректное тело запроса"), c.Path()).Log()
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(res)
 	}
 
-	service, err := h.service.Create(c.Context(), service.Name)
+	err := h.service.Create(c.Context(), &service)
 
 	if err != nil {
 		res := models.NewErrorResponse(err, c.Path()).Log()
 		return c.Status(fiber.StatusConflict).JSON(res)
 	}
 
-	return c.JSON(service)
+	return c.JSON(&service)
 }
 
 func (h *ServiceHandler) getServices(c *fiber.Ctx) error {

@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/dongri/phonenumber"
 	"my_documents_south_backend/internal/models"
 	"regexp"
 	"time"
 	"unicode"
+
+	"github.com/dongri/phonenumber"
 )
 
 type userService struct {
@@ -21,31 +22,30 @@ func NewUserService(userRepository models.UserRepository, tariffRepository model
 	return &userService{userRepository: userRepository, tariffRepository: tariffRepository, contextTimeout: contextTimeout}
 }
 
-func (s *userService) Create(c context.Context, user *models.User, password string) (*models.User, error) {
+func (s *userService) Create(c context.Context, user *models.User) error {
 	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
 	defer cancel()
 
-	//я так понял,у нас будет валидация всех полей и на фронте, и здесь. может я ничего не смыслю,но зачем?
+	hasLetter := false
+	hasDigit := false
+	normalized := phonenumber.Parse(user.Phone, "RU")
+
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 	if !emailRegex.MatchString(user.Email) {
-		return nil, errors.New("invalid email format")
+		return errors.New("invalid email format")
 	}
 
-	normalized := phonenumber.Parse(user.Phone, "RU")
 	if normalized == "" {
-		return nil, errors.New("invalid phone number")
+		return errors.New("invalid phone number")
 	}
 	user.Phone = normalized
 
-	// я так подумал,у нас же на этом моменте будет пароль зашифрован и пересолен,валидность тогда нужна на фронте, а не здесь(пока просто оставлю,как есть)
-	//ну или после валидации сразу шифровать пароль.я бы это ,кстати, сделал,если бы мог увидеть свой результат.
-	//а как я увижу результат без колонки "password" в бд?
-	if len(password) < 8 {
-		return nil, errors.New("invalid password: must contain at least 8 characters")
+	if len(user.Password) < 6 {
+		return errors.New("invalid password: must contain at least 6 characters")
 	}
-	hasLetter := false
-	hasDigit := false
-	for _, ch := range password {
+
+	// TODO тут вероятно можно использовать горутины
+	for _, ch := range user.Password {
 		if unicode.IsLetter(ch) {
 			hasLetter = true
 		}
@@ -54,14 +54,14 @@ func (s *userService) Create(c context.Context, user *models.User, password stri
 		}
 	}
 	if !hasLetter || !hasDigit {
-		return nil, errors.New("invalid password: must contain at least one letter and one digit")
+		return errors.New("invalid password: must contain at least one letter and one digit")
 	}
 
 	id := 1
 	tariff := &models.Tariff{Id: id}
 	terr := s.tariffRepository.GetById(ctx, id, tariff)
 	if terr != nil {
-		return nil, fmt.Errorf("failed to check default tariff: %w", terr)
+		return fmt.Errorf("failed to check default tariff: %w", terr)
 	}
 
 	// тариф по умолчанию (id = 1)
@@ -69,9 +69,9 @@ func (s *userService) Create(c context.Context, user *models.User, password stri
 
 	err := s.userRepository.Create(ctx, user)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return nil, nil
+	return nil
 }
 
 func (s *userService) Get(c context.Context) *[]models.User {
@@ -102,19 +102,15 @@ func (s *userService) GetById(c context.Context, id int) (*models.User, error) {
 	return user, nil
 }
 
-func (s *userService) Update(c context.Context, id int, name string) (*models.User, error) {
+func (s *userService) Update(c context.Context, id int, user *models.User) error {
 	// TODO update user service
 	// DONT TOUCH
-	return nil, nil
+	return nil
 }
 
 func (s *userService) Delete(c context.Context, id int) error {
 	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
 	defer cancel()
-
-	if id <= 0 {
-		return errors.New("invalid id")
-	}
 
 	return s.userRepository.Delete(ctx, id)
 }

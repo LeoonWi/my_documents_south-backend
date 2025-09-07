@@ -11,6 +11,7 @@ type Employee struct {
 	LastName   string `json:"last_name,omitempty" db:"last_name"`
 	MiddleName string `json:"middle_name,omitempty" db:"middle_name"`
 	Email      string `json:"email,omitempty" db:"email"`
+	Password   string `json:"password,omitempty" db:"password"`
 
 	RoleId int  `json:"role_id,omitempty" db:"role_id"`
 	Role   Role `json:"role,omitempty" db:"-"`

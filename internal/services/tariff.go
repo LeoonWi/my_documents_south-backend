@@ -16,16 +16,16 @@ func NewTariffService(tariffRepository models.TariffRepository, contextTimeout t
 	return &tariffService{tariffRepository: tariffRepository, contextTimeout: contextTimeout}
 }
 
-func (s *tariffService) Create(c context.Context, name string) (*models.Tariff, error) {
+func (s *tariffService) Create(c context.Context, tariff *models.Tariff) error {
 	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
 	defer cancel()
 
-	tariff := &models.Tariff{Name: name}
 	err := s.tariffRepository.Create(ctx, tariff)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return tariff, nil
+
+	return nil
 }
 
 func (s *tariffService) Get(c context.Context) *[]models.Tariff {
@@ -56,17 +56,16 @@ func (s *tariffService) GetById(c context.Context, id int) (*models.Tariff, erro
 	return tariff, nil
 }
 
-func (s *tariffService) Update(c context.Context, id int, name string) (*models.Tariff, error) {
+func (s *tariffService) Update(c context.Context, id int, tariff *models.Tariff) error {
 	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
 	defer cancel()
 
-	tariff := &models.Tariff{Id: id, Name: name}
-
+	tariff.Id = id
 	if err := s.tariffRepository.Update(ctx, tariff); err != nil {
-		return nil, err
+		return err
 	}
 
-	return tariff, nil
+	return nil
 }
 
 func (s *tariffService) Delete(c context.Context, id int) error {

@@ -16,17 +16,15 @@ func NewRoleService(roleRepository models.RoleRepository, contextTimeout time.Du
 	return &roleService{roleRepository: roleRepository, contextTimeout: contextTimeout}
 }
 
-func (s *roleService) Create(c context.Context, name string) (*models.Role, error) {
+func (s *roleService) Create(c context.Context, role *models.Role) error {
 	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
 	defer cancel()
 
-	role := models.Role{Name: name}
-
-	if err := s.roleRepository.Create(ctx, &role); err != nil {
-		return nil, err
+	if err := s.roleRepository.Create(ctx, role); err != nil {
+		return err
 	}
 
-	return &role, nil
+	return nil
 }
 
 func (s *roleService) Get(c context.Context) *[]models.Role {
@@ -58,9 +56,9 @@ func (s *roleService) GetById(c context.Context, id int) (*models.Role, error) {
 	return &role, nil
 }
 
-func (s *roleService) Update(c context.Context, id int, name string) (*models.Role, error) {
+func (s *roleService) Update(c context.Context, id int, role *models.Role) error {
 	// TODO update role service
-	return nil, nil
+	return nil
 }
 
 func (s *roleService) Delete(c context.Context, id int) error {

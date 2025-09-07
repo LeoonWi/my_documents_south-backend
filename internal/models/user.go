@@ -12,6 +12,7 @@ type User struct {
 	MiddleName string `json:"middle_name,omitempty" db:"middle_name"`
 	Email      string `json:"email,omitempty" db:"email"`
 	Phone      string `json:"phone,omitempty" db:"phone"`
+	Password   string `json:"password,omitempty" db:"password"`
 
 	TariffId int    `json:"tariff_id,omitempty" db:"tariff_id"`
 	Tariff   Tariff `json:"tariff,omitempty" db:"-"`
@@ -27,5 +28,5 @@ type UserRepository interface {
 }
 
 type UserService interface {
-	interfaces.EntityServiceUser[User]
+	interfaces.EntityService[User]
 }

@@ -20,17 +20,17 @@ func NewTariffHandler(tariffService models.TariffService) *TariffHandler {
 }
 
 func (h *TariffHandler) createTariff(c *fiber.Ctx) error {
-	tariff := &models.Tariff{}
-	if err := c.BodyParser(tariff); err != nil {
+	var tariff models.Tariff
+	if err := c.BodyParser(&tariff); err != nil {
 		res := models.NewErrorResponse(errors.New("Некорректное тело запроса"), c.Path()).Log()
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(res)
 	}
-	tariff, err := h.service.Create(c.Context(), tariff.Name)
+	err := h.service.Create(c.Context(), &tariff)
 	if err != nil {
 		res := models.NewErrorResponse(err, c.Path()).Log()
 		return c.Status(fiber.StatusConflict).JSON(res)
 	}
-	return c.JSON(tariff)
+	return c.JSON(&tariff)
 }
 
 func (h *TariffHandler) getTariffs(c *fiber.Ctx) error {
@@ -60,16 +60,14 @@ func (h *TariffHandler) updateTariff(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(res)
 	}
 
-	var req struct {
-		Name string `json:"name"`
-	}
+	var tariff models.Tariff
 
-	if err := c.BodyParser(&req); err != nil || req.Name == "" {
+	if err := c.BodyParser(&tariff); err != nil || tariff.Name == "" {
 		res := models.NewErrorResponse(errors.New("invalid body"), c.Path()).Log()
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(res)
 	}
 
-	tariff, err := h.service.Update(c.Context(), id, req.Name)
+	err = h.service.Update(c.Context(), id, &tariff)
 	if err != nil {
 		res := models.NewErrorResponse(err, c.Path()).Log()
 		return c.Status(fiber.StatusNotFound).JSON(res)

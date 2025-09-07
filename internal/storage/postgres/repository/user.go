@@ -49,7 +49,32 @@ func (r *userRepository) Create(ctx context.Context, user *models.User) error {
 }
 
 func (r *userRepository) Get(c context.Context, user *[]models.User) error {
-	err := r.conn.SelectContext(c, user, `SELECT * FROM "user"`)
+	// TODO не работает запрос. Переход на SQLBoiler
+	err := r.conn.SelectContext(
+		c,
+		user,
+		`
+		SELECT 
+			u.id,
+			u.name,
+			u.last_name,
+			u.middle_name,
+			u.email,
+			u.phone,
+			u.password,
+			u.tariff_id,
+			u.inn,
+			u.snils,
+			u.created_at,
+			u.updated_at,
+			t.id AS "tariff.id",
+			t.name AS "tariff.name",
+			t.created_at AS "tariff.created_at",
+			t.updated_at AS "tariff.updated_at"
+		FROM users u
+		LEFT JOIN tariffs t ON u.tariff_id = t.id
+	`,
+	)
 	if err != nil {
 		return err
 	}
