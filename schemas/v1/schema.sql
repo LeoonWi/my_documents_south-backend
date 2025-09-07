@@ -71,5 +71,16 @@ CREATE TABLE IF NOT EXISTS "request" (
 	"closed_at" TIMESTAMPTZ
 );
 
-INSERT INTO tariff ("name") VALUES ('Бесплатный');
-INSERT INTO role ("name") VALUES ('Администратор');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM tariff) THEN
+        INSERT INTO tariff ("name") VALUES ('Бесплатный');
+END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM role) THEN
+        INSERT INTO role ("name") VALUES ('Администратор');
+END IF;
+END $$;
