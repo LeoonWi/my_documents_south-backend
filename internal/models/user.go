@@ -12,14 +12,15 @@ type User struct {
 	MiddleName string `json:"middle_name,omitempty" db:"middle_name"`
 	Email      string `json:"email,omitempty" db:"email"`
 	Phone      string `json:"phone,omitempty" db:"phone"`
+	Password   string `json:"password,omitempty" db:"password"`
 
-	TariffId int    `json:"tariff_id,omitempty" db:"tariff_id"`
-	Tariff   Tariff `json:"tariff,omitempty" db:"-"`
+	TariffId int     `json:"tariff_id,omitempty" db:"tariff_id"`
+	Tariff   *Tariff `json:"tariff,omitempty" db:"tariff"`
 
-	Inn       string    `json:"inn,omitempty" db:"inn"`
-	Snils     string    `json:"snils,omitempty" db:"snils"`
-	CreatedAt time.Time `json:"created_at,omitempty" db:"created_at"`
-	UpdatedAt time.Time `json:"updated_at,omitempty" db:"updated_at"`
+	Inn       string     `json:"inn,omitempty" db:"inn"`
+	Snils     string     `json:"snils,omitempty" db:"snils"`
+	CreatedAt time.Time  `json:"created_at,omitempty" db:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty" db:"updated_at"`
 }
 
 type UserRepository interface {

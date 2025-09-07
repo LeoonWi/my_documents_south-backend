@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS "user" (
     "middle_name" CHARACTER VARYING(100),
     "email" CHARACTER VARYING(255) NOT NULL UNIQUE,
     "phone" CHARACTER VARYING(11) NOT NULL UNIQUE,
-	-- сделать реализацию SET DEFAULT на стороне приложения
+    "password" CHARACTER VARYING(255) NOT NULL,
 	"tariff_id" INTEGER REFERENCES "tariff" ON UPDATE CASCADE ON DELETE SET NULL,
 	"inn" CHARACTER VARYING(12),
 	"snils" CHARACTER VARYING(11) NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS "employee" (
     "last_name" CHARACTER VARYING(100) NOT NULL,
     "middle_name" CHARACTER VARYING(100),
     "email" CHARACTER VARYING(255) NOT NULL UNIQUE,
-    -- сделать реализацию SET DEFAULT на стороне приложения
+    "password" CHARACTER VARYING(255) NOT NULL,
 	"role_id" INTEGER REFERENCES "role" ON UPDATE CASCADE ON DELETE SET NULL,
 	"active" BOOLEAN NOT NULL,
 	"created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -54,7 +54,6 @@ CREATE TABLE IF NOT EXISTS "employee_specs" (
 	"created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	"updated_at" TIMESTAMPTZ,
 	UNIQUE ("employee_id", "service_id")
-
 );
 
 CREATE TABLE IF NOT EXISTS "request" (
@@ -71,3 +70,17 @@ CREATE TABLE IF NOT EXISTS "request" (
 	"desired_at" TIMESTAMPTZ,
 	"closed_at" TIMESTAMPTZ
 );
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM tariff) THEN
+        INSERT INTO tariff ("name") VALUES ('Бесплатный');
+END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM role) THEN
+        INSERT INTO role ("name") VALUES ('Администратор');
+END IF;
+END $$;

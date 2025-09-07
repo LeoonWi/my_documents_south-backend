@@ -320,7 +320,110 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          
+
+  /users/signup:
+    post:
+      summary: Регистрация пользователя
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "201":
+          description: Пользователь успешно создан
+        "400":
+          description: Ошибка валидации или другие ошибки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "422":
+          description: Некорректный JSON (invalid body)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users:
+    get:
+      summary: Получить список пользователей
+      tags: [Users]
+      responses:
+        "200":
+          description: Список пользователей
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  - type: 'null'
+
+  /users/{id}:
+    get:
+      summary: Получить пользователя по ID
+      tags: [Users]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: int
+      responses:
+        "200":
+          description: Найденный пользователь
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Некорректный ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Удалить пользователя по ID
+      tags: [Users]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: int
+      responses:
+        "200":
+          description: Пользователь удалён
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: int
+        "400":
+          description: Некорректный ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   schemas:
     Error:
@@ -370,6 +473,46 @@ components:
         name:
           type: string
           example: Standard
+        created_at:
+          type: string
+          example: 2025-09-01T12:00:00Z
+        updated_at:
+          type: string
+          nullable: true
+          example: 2025-09-03T15:30:00Z
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Иван
+        last_name:
+          type: string
+          example: Иванов
+        middle_name:
+          type: string
+          example: Иванович
+        email:
+          type: string
+          example: ivan@example.com
+        phone:
+          type: string
+          example: "+79998887766"
+        # я хз,ты же вкурсе,что в бд нет колонки "password"? оставлю так
+        password:
+          type: string
+          example: "Passw0rd"
+        inn:
+          type: string
+          example: "123456789012"
+        snils:
+          type: string
+          example: "12345678901"
+        tariff_id:
+          type: integer
         created_at:
           type: string
           example: 2025-09-01T12:00:00Z

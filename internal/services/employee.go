@@ -15,9 +15,9 @@ func NewEmployeeService(employeeRepository models.EmployeeRepository, contextTim
 	return &employeeService{employeeRepository: employeeRepository, contextTimeout: contextTimeout}
 }
 
-func (s *employeeService) Create(c context.Context, name string) (*models.Employee, error) {
+func (s *employeeService) Create(c context.Context, employee *models.Employee) error {
 	// TODO create employee service
-	return nil, nil
+	return nil
 }
 
 func (s *employeeService) Get(c context.Context) *[]models.Employee {
@@ -30,10 +30,10 @@ func (s *employeeService) GetById(c context.Context, id int) (*models.Employee, 
 	return nil, nil
 }
 
-func (s *employeeService) Update(c context.Context, id int, name string) (*models.Employee, error) {
+func (s *employeeService) Update(c context.Context, id int, employee *models.Employee) error {
 	// TODO update employee service
 	// DONT TOUCH
-	return nil, nil
+	return nil
 }
 
 func (s *employeeService) Delete(c context.Context, id int) error {
