@@ -58,13 +58,42 @@ func (h *ServiceHandler) getServiceById(c *fiber.Ctx) error {
 }
 
 func (h *ServiceHandler) updateService(c *fiber.Ctx) error {
-	// TODO update service handler
-	return nil
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusBadRequest).JSON(res)
+	}
+
+	var service models.Service
+
+	if err := c.BodyParser(&service); err != nil || service.Name == "" {
+		res := models.NewErrorResponse(errors.New("invalid body"), c.Path()).Log()
+		return c.Status(fiber.StatusNotFound).JSON(res)
+	}
+
+	err = h.service.Update(c.Context(), id, &service)
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusNotFound).JSON(res)
+	}
+
+	return c.JSON(&service)
 }
 
 func (h *ServiceHandler) deleteService(c *fiber.Ctx) error {
-	// TODO delete service handler
-	return nil
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		res := models.NewErrorResponse(errors.New("invalid id"), c.Path()).Log()
+		return c.Status(fiber.StatusBadRequest).JSON(res)
+	}
+
+	err = h.service.Delete(c.Context(), id)
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusConflict).JSON(res)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"id": id})
 }
 
 func ServiceRoute(db *sqlx.DB, group fiber.Router) {
