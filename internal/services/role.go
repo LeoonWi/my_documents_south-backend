@@ -45,7 +45,7 @@ func (s *roleService) GetById(c context.Context, id int) (*models.Role, error) {
 	defer cancel()
 
 	if id < 1 {
-		return nil, errors.New("Некорректное значение id")
+		return nil, errors.New("incorrect value id")
 	}
 
 	role := models.Role{}
@@ -57,11 +57,20 @@ func (s *roleService) GetById(c context.Context, id int) (*models.Role, error) {
 }
 
 func (s *roleService) Update(c context.Context, id int, role *models.Role) error {
-	// TODO update role service
+	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	defer cancel()
+
+	role.Id = id
+	if err := s.roleRepository.Update(ctx, role); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (s *roleService) Delete(c context.Context, id int) error {
-	// TODO delete role service
+	if id == 1 {
+		return errors.New("impossible to remove the role given by default")
+	}
 	return nil
 }

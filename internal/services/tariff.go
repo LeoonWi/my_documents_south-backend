@@ -72,8 +72,8 @@ func (s *tariffService) Delete(c context.Context, id int) error {
 	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
 	defer cancel()
 
-	if id <= 0 {
-		return errors.New("invalid id")
+	if id == 1 {
+		return errors.New("impossible to remove the tariff given by default")
 	}
 
 	return s.tariffRepository.Delete(ctx, id)

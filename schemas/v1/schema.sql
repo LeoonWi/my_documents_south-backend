@@ -54,7 +54,6 @@ CREATE TABLE IF NOT EXISTS "employee_specs" (
 	"created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	"updated_at" TIMESTAMPTZ,
 	UNIQUE ("employee_id", "service_id")
-
 );
 
 CREATE TABLE IF NOT EXISTS "request" (
@@ -71,3 +70,6 @@ CREATE TABLE IF NOT EXISTS "request" (
 	"desired_at" TIMESTAMPTZ,
 	"closed_at" TIMESTAMPTZ
 );
+
+INSERT INTO tariff ("name") VALUES ('Бесплатный');
+INSERT INTO role ("name") VALUES ('Администратор');

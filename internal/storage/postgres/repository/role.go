@@ -2,9 +2,10 @@ package repository
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
+	"errors"
 	"my_documents_south_backend/internal/models"
-	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type roleRepository struct {
@@ -16,10 +17,7 @@ func NewRoleRepository(db *sqlx.DB) models.RoleRepository {
 }
 
 func (r *roleRepository) Create(c context.Context, role *models.Role) error {
-	ctx, cancel := context.WithTimeout(c, 10*time.Second)
-	defer cancel()
-
-	err := r.conn.GetContext(ctx, role, "INSERT INTO role (name) VALUES ($1) RETURNING *", role.Name)
+	err := r.conn.GetContext(c, role, "INSERT INTO role (name) VALUES ($1) RETURNING *", role.Name)
 	if err != nil {
 		return err
 	}
@@ -28,10 +26,7 @@ func (r *roleRepository) Create(c context.Context, role *models.Role) error {
 }
 
 func (r *roleRepository) Get(c context.Context, roles *[]models.Role) error {
-	ctx, cancel := context.WithTimeout(c, 10*time.Second)
-	defer cancel()
-
-	if err := r.conn.SelectContext(ctx, roles, "SELECT * FROM role"); err != nil {
+	if err := r.conn.SelectContext(c, roles, "SELECT * FROM role"); err != nil {
 		return err
 	}
 
@@ -39,10 +34,7 @@ func (r *roleRepository) Get(c context.Context, roles *[]models.Role) error {
 }
 
 func (r *roleRepository) GetById(c context.Context, id int, role *models.Role) error {
-	ctx, cancel := context.WithTimeout(c, 10*time.Second)
-	defer cancel()
-
-	err := r.conn.GetContext(ctx, role, "SELECT * FROM role WHERE id = $1", id)
+	err := r.conn.GetContext(c, role, "SELECT * FROM role WHERE id = $1", id)
 	if err != nil {
 		return err
 	}
@@ -51,11 +43,22 @@ func (r *roleRepository) GetById(c context.Context, id int, role *models.Role) e
 }
 
 func (r *roleRepository) Update(c context.Context, role *models.Role) error {
-	// TODO update role repository
-	return nil
+	return r.conn.GetContext(c, role, "UPDATE role SET name = $1, updated_at = NOW() WHERE id = $2 RETURNING *;", role.Name, role.Id)
 }
 
 func (r *roleRepository) Delete(c context.Context, id int) error {
-	// TODO delete role repository
+	result, err := r.conn.ExecContext(c, "DELETE FROM role WHERE id=$1", id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("role not found")
+	}
 	return nil
 }

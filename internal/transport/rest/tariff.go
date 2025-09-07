@@ -73,7 +73,7 @@ func (h *TariffHandler) updateTariff(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(res)
 	}
 
-	return c.JSON(tariff)
+	return c.JSON(&tariff)
 }
 
 func (h *TariffHandler) deleteTariff(c *fiber.Ctx) error {
@@ -85,17 +85,11 @@ func (h *TariffHandler) deleteTariff(c *fiber.Ctx) error {
 
 	err = h.service.Delete(c.Context(), id)
 	if err != nil {
-		status := fiber.StatusInternalServerError
-		if err.Error() == "tariff not found" {
-			status = fiber.StatusNotFound
-		}
 		res := models.NewErrorResponse(err, c.Path()).Log()
-		return c.Status(status).JSON(res)
+		return c.Status(fiber.StatusConflict).JSON(res)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"id": id,
-	})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"id": id})
 }
 
 func TariffRoute(db *sqlx.DB, group fiber.Router) {

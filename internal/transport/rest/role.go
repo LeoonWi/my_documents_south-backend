@@ -58,13 +58,42 @@ func (h *RoleHandler) getRoleById(c *fiber.Ctx) error {
 }
 
 func (h *RoleHandler) updateRole(c *fiber.Ctx) error {
-	// TODO update role handler
-	return nil
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusBadRequest).JSON(res)
+	}
+
+	var role models.Role
+
+	if err := c.BodyParser(&role); err != nil || role.Name == "" {
+		res := models.NewErrorResponse(errors.New("invalid body"), c.Path()).Log()
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(res)
+	}
+
+	err = h.service.Update(c.Context(), id, &role)
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusNotFound).JSON(res)
+	}
+
+	return c.JSON(&role)
 }
 
 func (h *RoleHandler) deleteRole(c *fiber.Ctx) error {
-	// TODO delete role handler
-	return nil
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		res := models.NewErrorResponse(errors.New("invalid id"), c.Path()).Log()
+		return c.Status(fiber.StatusBadRequest).JSON(res)
+	}
+
+	err = h.service.Delete(c.Context(), id)
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusConflict).JSON(res)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"id": id})
 }
 
 func RoleRoute(db *sqlx.DB, group fiber.Router) {
