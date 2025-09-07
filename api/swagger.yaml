@@ -334,8 +334,8 @@ paths:
       responses:
         "201":
           description: Пользователь успешно создан
-        "400":
-          description: Ошибка валидации или другие ошибки
+        "409":
+          description: Конфликт — пользователь уже существует
           content:
             application/json:
               schema:
@@ -501,7 +501,6 @@ components:
         phone:
           type: string
           example: "+79998887766"
-        # я хз,ты же вкурсе,что в бд нет колонки "password"? оставлю так
         password:
           type: string
           example: "Passw0rd"
@@ -513,6 +512,10 @@ components:
           example: "12345678901"
         tariff_id:
           type: integer
+          example: 1
+        tariff:
+          #я немного не уверен, писать ref или type.на твое усмотрение
+          $ref: '#/components/schemas/Tariff'
         created_at:
           type: string
           example: 2025-09-01T12:00:00Z
