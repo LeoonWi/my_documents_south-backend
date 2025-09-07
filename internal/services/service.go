@@ -20,7 +20,8 @@ func (s *serviceService) Create(c context.Context, service *models.Service) erro
 	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
 	defer cancel()
 
-	if err := s.serviceRepository.Create(ctx, service); err != nil {
+	err := s.serviceRepository.Create(ctx, service)
+	if err != nil {
 		return err
 	}
 
@@ -32,7 +33,8 @@ func (s *serviceService) Get(c context.Context) *[]models.Service {
 	defer cancel()
 
 	var service []models.Service
-	if err := s.serviceRepository.Get(ctx, &service); err != nil {
+	err := s.serviceRepository.Get(ctx, &service)
+	if err != nil {
 		return nil
 	}
 
@@ -56,11 +58,20 @@ func (s *serviceService) GetById(c context.Context, id int) (*models.Service, er
 }
 
 func (s *serviceService) Update(c context.Context, id int, service *models.Service) error {
-	// TODO update service service
+	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	defer cancel()
+
+	service.Id = id
+	if err := s.serviceRepository.Update(ctx, service); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (s *serviceService) Delete(c context.Context, id int) error {
-	// TODO delete service service
-	return nil
+	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	defer cancel()
+
+	return s.serviceRepository.Delete(ctx, id)
 }

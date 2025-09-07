@@ -149,7 +149,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: int
             format: int
             example: 6
       responses:
@@ -171,6 +171,78 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+    put:
+      tags: 
+        -Services
+      summary: Обновление сервиса по id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: int
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                &ref: '#/components/schemas/Service'
+        '400': 
+          description: Некорректный id
+          content:
+            application/json:
+              schema:
+                &ref: '#/components/schemas/Error'
+        '404':
+          description: Тариф не найден
+          content:
+            application/json:
+              schema:
+                &ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Services
+      summary: Удаление сервиса по id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: int
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int
+                    example: 8
+        '400':
+          description: Неверный id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Сервис не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /tariffs:
     post:
