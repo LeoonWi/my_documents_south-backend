@@ -2,9 +2,10 @@ package repository
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
+	"errors"
 	"my_documents_south_backend/internal/models"
-	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type serviceRepository struct {
@@ -16,10 +17,7 @@ func NewServiceRepository(db *sqlx.DB) models.ServiceRepository {
 }
 
 func (r *serviceRepository) Create(c context.Context, service *models.Service) error {
-	ctx, cancel := context.WithTimeout(c, 10*time.Second)
-	defer cancel()
-
-	err := r.conn.GetContext(ctx, service, "INSERT INTO service (name) VALUES ($1) RETURNING *", service.Name)
+	err := r.conn.GetContext(c, service, "INSERT INTO service (name) VALUES ($1) RETURNING *", service.Name)
 	if err != nil {
 		return err
 	}
@@ -28,20 +26,14 @@ func (r *serviceRepository) Create(c context.Context, service *models.Service) e
 }
 
 func (r *serviceRepository) Get(c context.Context, service *[]models.Service) error {
-	ctx, cancel := context.WithTimeout(c, 10*time.Second)
-	defer cancel()
-
-	if err := r.conn.SelectContext(ctx, service, "SELECT * FROM service"); err != nil {
+	if err := r.conn.SelectContext(c, service, "SELECT * FROM service"); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (r *serviceRepository) GetById(c context.Context, id int, service *models.Service) error {
-	ctx, cancel := context.WithTimeout(c, 10*time.Second)
-	defer cancel()
-
-	err := r.conn.GetContext(ctx, service, "SELECT * FROM service WHERE id = $1", id)
+	err := r.conn.GetContext(c, service, "SELECT * FROM service WHERE id = $1", id)
 	if err != nil {
 		return err
 	}
@@ -50,11 +42,23 @@ func (r *serviceRepository) GetById(c context.Context, id int, service *models.S
 }
 
 func (r *serviceRepository) Update(c context.Context, service *models.Service) error {
-	// TODO update service repository
-	return nil
+	return r.conn.GetContext(c, service, "UPDATE service SET name = $1, update_at = NOW() WHERE id = $2 RETURNING *;", service.Name, service.Id)
 }
 
 func (r *serviceRepository) Delete(c context.Context, id int) error {
-	// TODO delete service repository
+	result, err := r.conn.ExecContext(c, "DELETE FROM service WHERE id=$1", id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("service not found")
+	}
+
 	return nil
 }
