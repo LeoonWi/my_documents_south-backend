@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"my_documents_south_backend/internal/interfaces"
 	"time"
 )
@@ -14,6 +15,8 @@ type Role struct {
 
 type RoleRepository interface {
 	interfaces.EntityRepository[Role]
+	SetSuperRole(c context.Context, id int) error
+	GetSuperRole(c context.Context, role *Role) error
 }
 
 type RoleService interface {

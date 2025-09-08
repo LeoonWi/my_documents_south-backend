@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"my_documents_south_backend/internal/interfaces"
 	"time"
 )
@@ -14,6 +15,8 @@ type Tariff struct {
 
 type TariffRepository interface {
 	interfaces.EntityRepository[Tariff]
+	SetDefault(c context.Context, id int) error
+	GetDefault(c context.Context, tariff *Tariff) error
 }
 
 type TariffService interface {

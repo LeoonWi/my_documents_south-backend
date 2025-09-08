@@ -71,16 +71,24 @@ CREATE TABLE IF NOT EXISTS "request" (
 	"closed_at" TIMESTAMPTZ
 );
 
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM tariff) THEN
-        INSERT INTO tariff ("name") VALUES ('Бесплатный');
-END IF;
-END $$;
-
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM role) THEN
-        INSERT INTO role ("name") VALUES ('Администратор');
-END IF;
-END $$;
+CREATE TABLE IF NOT EXISTS "setting" (
+    "id" SERIAL NOT NULL PRIMARY KEY,
+    "default_tariff_id" INT REFERENCES "tariff" ON UPDATE CASCADE ON DELETE SET NULL,
+    "superuser_role_id" INT REFERENCES "role" ON UPDATE CASCADE ON DELETE SET NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ
+);
+--
+-- DO $$
+-- BEGIN
+--     IF NOT EXISTS (SELECT 1 FROM tariff) THEN
+--         INSERT INTO tariff ("name") VALUES ('Бесплатный');
+-- END IF;
+-- END $$;
+--
+-- DO $$
+-- BEGIN
+--     IF NOT EXISTS (SELECT 1 FROM role) THEN
+--         INSERT INTO role ("name") VALUES ('Администратор');
+-- END IF;
+-- END $$;

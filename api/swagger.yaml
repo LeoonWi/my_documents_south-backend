@@ -173,7 +173,7 @@ paths:
                 $ref: "#/components/schemas/Error"
     put:
       tags: 
-        -Services
+        - Services
       summary: Обновление сервиса по id
       parameters:
         - name: id

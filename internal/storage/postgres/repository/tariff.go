@@ -3,8 +3,9 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/jmoiron/sqlx"
 	"my_documents_south_backend/internal/models"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type tariffRepository struct {
@@ -37,6 +38,36 @@ func (r *tariffRepository) GetById(c context.Context, id int, tariff *models.Tar
 		return err
 	}
 
+	return nil
+}
+
+func (r *tariffRepository) SetDefault(c context.Context, id int) error {
+	var count int
+	err := r.conn.GetContext(c, &count, `SELECT COUNT(*) FROM setting`)
+	if err != nil {
+		return err
+	}
+
+	if count != 0 {
+		_, err = r.conn.ExecContext(c, `UPDATE setting SET default_tariff_id = $1`, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = r.conn.ExecContext(c, `INSERT INTO setting (default_tariff_id) VALUES ($1)`, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *tariffRepository) GetDefault(c context.Context, tariff *models.Tariff) error {
+	err := r.conn.GetContext(c, tariff, `SELECT * FROM "tariff" t WHERE t.id = setting.default_tariff_id`)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

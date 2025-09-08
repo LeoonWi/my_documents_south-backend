@@ -1,11 +1,12 @@
 package app
 
 import (
+	"my_documents_south_backend/internal/storage/postgres"
+	"my_documents_south_backend/internal/transport/rest"
+
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
-	"my_documents_south_backend/internal/storage/postgres"
-	"my_documents_south_backend/internal/transport/rest"
 )
 
 func Run() {

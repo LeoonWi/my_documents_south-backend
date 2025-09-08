@@ -10,10 +10,15 @@ import (
 type roleService struct {
 	roleRepository models.RoleRepository
 	contextTimeout time.Duration
+	counterRole    int
 }
 
 func NewRoleService(roleRepository models.RoleRepository, contextTimeout time.Duration) models.RoleService {
-	return &roleService{roleRepository: roleRepository, contextTimeout: contextTimeout}
+	return &roleService{
+		roleRepository: roleRepository,
+		contextTimeout: contextTimeout,
+		counterRole:    0,
+	}
 }
 
 func (s *roleService) Create(c context.Context, role *models.Role) error {
@@ -21,6 +26,23 @@ func (s *roleService) Create(c context.Context, role *models.Role) error {
 	defer cancel()
 
 	if err := s.roleRepository.Create(ctx, role); err != nil {
+		return err
+	}
+
+	if s.counterRole != 1 {
+		return nil
+	}
+
+	// если роль создается первый раз, делаем её главной
+	// проверяем, существует ли уже суперроль. например, если счетчик обнулился при рестарте сервера
+	var superrole models.Role
+	err := s.roleRepository.GetSuperRole(c, &superrole)
+	if err == nil {
+		return nil
+	}
+
+	err = s.roleRepository.SetSuperRole(c, role.Id)
+	if err != nil {
 		return err
 	}
 
@@ -70,7 +92,12 @@ func (s *roleService) Update(c context.Context, id int, role *models.Role) error
 
 func (s *roleService) Delete(c context.Context, id int) error {
 	if id == 1 {
-		return errors.New("impossible to remove the role given by default")
+		return errors.New("impossible to remove the role of superuser")
 	}
 	return nil
+}
+
+func (s *roleService) count() int {
+	s.counterRole++
+	return s.counterRole
 }

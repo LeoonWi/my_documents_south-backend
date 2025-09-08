@@ -42,6 +42,36 @@ func (r *roleRepository) GetById(c context.Context, id int, role *models.Role) e
 	return nil
 }
 
+func (r *roleRepository) SetSuperRole(c context.Context, id int) error {
+	var count int
+	err := r.conn.GetContext(c, &count, `SELECT COUNT(*) FROM setting`)
+	if err != nil {
+		return err
+	}
+
+	if count != 0 {
+		_, err = r.conn.ExecContext(c, `UPDATE setting SET superuser_role_id = $1`, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = r.conn.ExecContext(c, `INSERT INTO setting (superuser_role_id) VALUES ($1)`, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *roleRepository) GetSuperRole(c context.Context, role *models.Role) error {
+	err := r.conn.GetContext(c, role, `SELECT * FROM "role" r WHERE r.id = setting.superuser_role_id`)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *roleRepository) Update(c context.Context, role *models.Role) error {
 	return r.conn.GetContext(c, role, "UPDATE role SET name = $1, updated_at = NOW() WHERE id = $2 RETURNING *;", role.Name, role.Id)
 }
