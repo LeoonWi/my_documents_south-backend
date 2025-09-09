@@ -79,7 +79,7 @@ func (h *UserHandler) deleteUser(c *fiber.Ctx) error {
 	})
 }
 
-func ClientRoute(db *sqlx.DB, group fiber.Router) {
+func UserRoute(db *sqlx.DB, group fiber.Router) {
 	repo := repository.NewUserRepository(db)
 	//потребовалось создать еще одну ссылку на репозиторий
 	repo2 := repository.NewTariffRepository(db)
