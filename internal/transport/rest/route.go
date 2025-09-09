@@ -7,7 +7,7 @@ import (
 
 func Setup(db *sqlx.DB, app *fiber.App) {
 	publicRouter := app.Group("")
-	ClientRoute(db, publicRouter)
+	UserRoute(db, publicRouter)
 	EmployeeRoute(db, publicRouter)
 	RoleRoute(db, publicRouter)
 	ServiceRoute(db, publicRouter)
