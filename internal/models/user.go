@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"my_documents_south_backend/internal/interfaces"
 	"time"
 )
@@ -25,8 +26,10 @@ type User struct {
 
 type UserRepository interface {
 	interfaces.EntityRepository[User]
+	UpdateTariffForUsers(ctx context.Context, oldTariffId, newTariffId int) error
 }
 
 type UserService interface {
 	interfaces.EntityService[User]
+	UpdateTariffsAfterDelete(ctx context.Context, deletedTariffId int) error
 }

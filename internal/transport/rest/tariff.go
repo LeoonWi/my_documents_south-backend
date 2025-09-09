@@ -88,7 +88,7 @@ func (h *TariffHandler) deleteTariff(c *fiber.Ctx) error {
 		res := models.NewErrorResponse(err, c.Path()).Log()
 		return c.Status(fiber.StatusConflict).JSON(res)
 	}
-
+		
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"id": id})
 }
 

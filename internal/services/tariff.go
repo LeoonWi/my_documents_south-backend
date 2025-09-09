@@ -7,10 +7,16 @@ import (
 	"time"
 )
 
+type TariffEvent struct {
+	Type     string //  "deleted"
+	TariffID int
+}
+
 type tariffService struct {
 	tariffRepository models.TariffRepository
 	contextTimeout   time.Duration
 	counterTariff    int
+	Events           chan TariffEvent
 }
 
 func NewTariffService(tariffRepository models.TariffRepository, contextTimeout time.Duration) models.TariffService {
@@ -18,6 +24,7 @@ func NewTariffService(tariffRepository models.TariffRepository, contextTimeout t
 		tariffRepository: tariffRepository,
 		contextTimeout:   contextTimeout,
 		counterTariff:    0,
+		Events:           make(chan TariffEvent, 10),
 	}
 }
 
@@ -94,17 +101,28 @@ func (s *tariffService) Delete(c context.Context, id int) error {
 	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
 	defer cancel()
 
-	var tariff models.Tariff
-	err := s.tariffRepository.GetDefault(ctx, &tariff)
+	var defaultTariff models.Tariff
+	err := s.tariffRepository.GetDefault(ctx, &defaultTariff)
 	if err != nil {
 		return err
 	}
 
-	if tariff.Id == id {
+	if defaultTariff.Id == id {
 		return errors.New("impossible to delete the service by default")
 	}
 
-	return s.tariffRepository.Delete(ctx, id)
+	err = s.tariffRepository.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// событие, что тариф удалён
+	s.Events <- TariffEvent{
+		Type:     "deleted",
+		TariffID: id,
+	}
+
+	return nil
 }
 
 func (s *tariffService) count() int {

@@ -1,6 +1,8 @@
 package models
 
 import (
+	"context"
+	"my_documents_south_backend/internal/interfaces"
 	"time"
 )
 
@@ -17,11 +19,19 @@ type Request struct {
 	EmployeeId int64     `json:"employee_id,omitempty" db:"employee_id"`
 	Employee   *Employee `json:"employee" db:"employee"`
 
-	Priority  int16     `json:"priority,omitempty" db:"priority"`
-	Desc      string    `json:"desc,omitempty" db:"desc"`
-	Status    int16     `json:"status,omitempty" db:"status"`
-	CreatedAt time.Time `json:"created_at,omitempty" db:"created_at"`
-	UpdatedAt time.Time `json:"updated_at,omitempty" db:"updated_at"`
-	DesiredAt time.Time `json:"desired_at,omitempty" db:"desired_at"`
-	ClosedAt  time.Time `json:"closed_at,omitempty" db:"closed_at"`
+	Priority  int16      `json:"priority,omitempty" db:"priority"`
+	Desc      string     `json:"desc,omitempty" db:"desc"`
+	Status    int16      `json:"status,omitempty" db:"status"`
+	CreatedAt time.Time  `json:"created_at,omitempty" db:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty" db:"updated_at"`
+	DesiredAt time.Time  `json:"desired_at,omitempty" db:"desired_at"`
+	ClosedAt  time.Time  `json:"closed_at,omitempty" db:"closed_at"`
+}
+type RequestRepository interface {
+	interfaces.EntityRepository[Request]
+	GetWithFilter(ctx context.Context, i *[]Request, filter Request) error
+}
+type RequestService interface {
+	interfaces.EntityService[Request]
+	GetWithFilter(ctx context.Context, filter Request) ([]Request, error)
 }

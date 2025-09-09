@@ -11,5 +11,6 @@ func Setup(db *sqlx.DB, app *fiber.App) {
 	EmployeeRoute(db, publicRouter)
 	RoleRoute(db, publicRouter)
 	ServiceRoute(db, publicRouter)
+	RequestRoute(db, publicRouter)
 	TariffRoute(db, publicRouter)
 }

@@ -114,3 +114,31 @@ func (s *userService) Delete(c context.Context, id int) error {
 
 	return s.userRepository.Delete(ctx, id)
 }
+
+func (s *userService) ListenTariffEvents(events <-chan TariffEvent) {
+	go func() {
+		for e := range events {
+			if e.Type == "deleted" {
+				_ = s.UpdateTariffsAfterDelete(context.Background(), e.TariffID)
+			}
+		}
+	}()
+}
+
+func (s *userService) UpdateTariffsAfterDelete(ctx context.Context, deletedTariffId int) error {
+	ctx, cancel := context.WithTimeout(ctx, s.contextTimeout)
+	defer cancel()
+
+	var defaultTariff models.Tariff
+	err := s.tariffRepository.GetDefault(ctx, &defaultTariff)
+	if err != nil {
+		return fmt.Errorf("failed to get default tariff: %w", err)
+	}
+
+	err = s.userRepository.UpdateTariffForUsers(ctx, deletedTariffId, defaultTariff.Id)
+	if err != nil {
+		return fmt.Errorf("failed to update users tariffs: %w", err)
+	}
+
+	return nil
+}

@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"my_documents_south_backend/internal/models"
 	"my_documents_south_backend/internal/services"
 	"my_documents_south_backend/internal/storage/postgres/repository"
@@ -19,32 +20,73 @@ func NewEmployeeHandler(employeeService models.EmployeeService) *EmployeeHandler
 }
 
 func (h *EmployeeHandler) createEmployee(c *fiber.Ctx) error {
-	// TODO create employee handler
-	return nil
+	var employee models.Employee
+
+	if err := c.BodyParser(&employee); err != nil {
+		res := models.NewErrorResponse(errors.New("invalid body"), c.Path()).Log()
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(res)
+	}
+
+	err := h.employeeService.Create(c.Context(), &employee)
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusConflict).JSON(res)
+	}
+
+	return c.SendStatus(fiber.StatusCreated)
 }
 
 func (h *EmployeeHandler) getEmployee(c *fiber.Ctx) error {
-	// TODO get list employee handler
-	return nil
+	return c.JSON(h.employeeService.Get(c.Context()))
 }
 
 func (h *EmployeeHandler) getEmployeeById(c *fiber.Ctx) error {
-	// TODO get employee by id handler
-	return nil
+	id, err := c.ParamsInt("id", 0)
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusBadRequest).JSON(res)
+	}
+
+	employee, err := h.employeeService.GetById(c.Context(), id)
+	if err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusNotFound).JSON(res)
+	}
+
+	return c.JSON(employee)
 }
 
 func (h *EmployeeHandler) deleteEmployee(c *fiber.Ctx) error {
-	// TODO delete employee by id handler
-	return nil
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		res := models.NewErrorResponse(errors.New("invalid id"), c.Path()).Log()
+		return c.Status(fiber.StatusBadRequest).JSON(res)
+	}
+
+	err = h.employeeService.Delete(c.Context(), id)
+	if err != nil {
+		status := fiber.StatusInternalServerError
+		if err.Error() == "user not found" {
+			status = fiber.StatusNotFound
+		}
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(status).JSON(res)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"id": id,
+	})
 }
 
 func EmployeeRoute(db *sqlx.DB, group fiber.Router) {
 	repo := repository.NewEmployeeRepository(db)
+
+	// repo2 := repository.NewRoleRepository(db)
 	service := services.NewEmployeeService(repo, 10*time.Second)
 	handler := NewEmployeeHandler(service)
 
 	tag := group.Group("/employee")
-	tag.Post("", handler.createEmployee)
+	tag.Post("/signup", handler.createEmployee)
 	tag.Get("", handler.getEmployee)
 	tag.Get("/:id", handler.getEmployeeById)
 	tag.Delete("/:id", handler.deleteEmployee)

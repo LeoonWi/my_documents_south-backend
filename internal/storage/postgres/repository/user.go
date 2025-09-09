@@ -107,3 +107,7 @@ func (r *userRepository) Delete(c context.Context, id int) error {
 	}
 	return nil
 }
+func (r *userRepository) UpdateTariffForUsers(ctx context.Context, oldTariffId, newTariffId int) error {
+	_, err := r.conn.ExecContext(ctx, `UPDATE "user" SET tariff_id = $1 WHERE tariff_id = $2`, newTariffId, oldTariffId)
+	return err
+}
