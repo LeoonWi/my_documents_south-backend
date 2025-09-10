@@ -11,8 +11,8 @@ type Request struct {
 	ServiceId int      `json:"service_id,omitempty" db:"service_id"`
 	Service   *Service `json:"service,omitempty" db:"service"`
 
-	OwnerId int64 `json:"owner_id,omitempty" db:"owner_id"`
-	User    *User `json:"user,omitempty" db:"user"`
+	UserId int64 `json:"owner_id,omitempty" db:"user_id"`
+	User   *User `json:"user,omitempty" db:"user"`
 
 	EmployeeId int64     `json:"employee_id,omitempty" db:"employee_id"`
 	Employee   *Employee `json:"employee" db:"employee"`
