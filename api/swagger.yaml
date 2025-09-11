@@ -8,7 +8,7 @@ servers:
     description: local server
 
 paths:
-  /roles:
+  /pub/roles:
     post:
       tags:
         - Roles
@@ -41,6 +41,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /prot/roles:
     get:
       tags:
         - Roles
@@ -57,7 +58,7 @@ paths:
                       $ref: "#/components/schemas/Role"
                   - type: 'null'
 
-  /roles/{id}:
+  /prot/roles/{id}:
     get:
       tags:
         - Roles
@@ -90,7 +91,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /services:
+  /prot/services:
     post:
       tags:
         - Services
@@ -123,6 +124,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /prot/services/:
     get:
       tags:
         - Services
@@ -139,7 +141,7 @@ paths:
                       $ref: "#/components/schemas/Service"
                   - type: "null"
 
-  /services/{id}:
+  /prot/services/{id}:
     get:
       tags:
         - Services
@@ -244,7 +246,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /tariffs:
+  /pub/tariffs:
     post:
       summary: Создание тарифа
       tags: [Tariffs]
@@ -276,6 +278,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /prot/tariffs/:
     get:
       summary: Получение списка тарифов
       tags: [Tariffs]
@@ -291,7 +294,7 @@ paths:
                       $ref: '#/components/schemas/Tariff'
                   - type: "null"
 
-  /tariffs/{id}:
+  /prot/tariffs/{id}:
     get:
       summary: Получиение тарифа по id
       tags: [Tariffs]
@@ -393,7 +396,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /users/signup:
+  /pub/users/signup:
     post:
       summary: Регистрация пользователя
       tags: [Users]
@@ -419,7 +422,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /users:
+  /prot/users:
     get:
       summary: Получить список пользователей
       tags: [Users]
@@ -435,7 +438,7 @@ paths:
                       $ref: '#/components/schemas/User'
                   - type: 'null'
 
-  /users/{id}:
+  /prot/users/{id}:
     get:
       summary: Получить пользователя по ID
       tags: [Users]
@@ -502,7 +505,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /employee/signup:
+  /pub/employee/signup:
     post:
       summary: Регистрация сотрудника
       tags: [Employee]
@@ -528,7 +531,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     
-  /employee:
+  /prot/employee:
     get:
       summary: Получить список сотрудников
       tags: [Employee]
@@ -544,7 +547,7 @@ paths:
                       $ref: '#/components/schemas/Employee'
                   - type: 'null'
 
-  /employee/{id}:
+  /prot/employee/{id}:
     get:
       summary: Получить сотрудника по ID
       tags: [Employee]
