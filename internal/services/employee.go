@@ -18,8 +18,8 @@ type employeeService struct {
 	contextTimeout     time.Duration
 }
 
-func NewEmployeeService(employeeRepository models.EmployeeRepository, contextTimeout time.Duration) models.EmployeeService {
-	return &employeeService{employeeRepository: employeeRepository, contextTimeout: contextTimeout}
+func NewEmployeeService(employeeRepository models.EmployeeRepository, roleRepository models.RoleRepository, contextTimeout time.Duration) models.EmployeeService {
+	return &employeeService{employeeRepository: employeeRepository, roleRepository: roleRepository, contextTimeout: contextTimeout}
 }
 
 func (s *employeeService) Create(c context.Context, employee *models.Employee) error {
