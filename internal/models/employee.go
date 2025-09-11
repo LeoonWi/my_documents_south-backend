@@ -17,9 +17,9 @@ type Employee struct {
 	RoleId int   `json:"role_id,omitempty" db:"role_id"`
 	Role   *Role `json:"role,omitempty" db:"role"`
 
-	Active    bool      `json:"active" db:"active"`
-	CreatedAt time.Time `json:"created_at,omitempty" db:"created_at"`
-	UpdatedAt time.Time `json:"updated_at,omitempty" db:"updated_at"`
+	Active    bool       `json:"active" db:"active"`
+	CreatedAt time.Time  `json:"created_at,omitempty" db:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty" db:"updated_at"`
 }
 
 type EmployeeRepository interface {

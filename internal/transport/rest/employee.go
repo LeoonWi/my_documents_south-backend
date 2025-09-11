@@ -80,8 +80,6 @@ func (h *EmployeeHandler) deleteEmployee(c *fiber.Ctx) error {
 
 func EmployeeRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router) *models.EmployeeService {
 	repo := repository.NewEmployeeRepository(db)
-
-	// repo2 := repository.NewRoleRepository(db)
 	service := services.NewEmployeeService(repo, 10*time.Second)
 	handler := NewEmployeeHandler(service)
 

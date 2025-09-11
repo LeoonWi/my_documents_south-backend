@@ -12,7 +12,14 @@ func Setup(db *sqlx.DB, app *fiber.App) {
 
 	protectedRouter := app.Group("/prot")
 	protectedRouter.Use(middleware.Protected())
-
+	employee := EmployeeRoute(db, publicRouter, protectedRouter)
+	user := UserRoute(
+		db,
+		publicRouter,
+		protectedRouter,
+		TariffRoute(db, publicRouter, protectedRouter),
+	)
+	RequestRoute(db, protectedRouter, user, employee)
 	RoleRoute(db, publicRouter, protectedRouter)
 	ServiceRoute(db, protectedRouter)
 	AuthRouter(
