@@ -65,7 +65,7 @@ func (r *roleRepository) SetSuperRole(c context.Context, id int) error {
 }
 
 func (r *roleRepository) GetSuperRole(c context.Context, role *models.Role) error {
-	err := r.conn.GetContext(c, role, `SELECT * FROM "role" r WHERE r.id = setting.superuser_role_id`)
+	err := r.conn.GetContext(c, role, `SELECT * FROM "role" r WHERE r.id = (SELECT "superuser_role_id" FROM "setting" LIMIT 1)`)
 	if err != nil {
 		return err
 	}

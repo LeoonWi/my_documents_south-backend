@@ -96,15 +96,14 @@ func (h *RoleHandler) deleteRole(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"id": id})
 }
 
-func RoleRoute(db *sqlx.DB, group fiber.Router) {
+func RoleRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router) {
 	repo := repository.NewRoleRepository(db)
 	service := services.NewRoleService(repo, 10*time.Second)
 	handler := NewRoleHandler(service)
 
-	tag := group.Group("/roles")
-	tag.Post("", handler.createRole)
-	tag.Get("", handler.getRoles)
-	tag.Get("/:id", handler.getRoleById)
-	tag.Put("/:id", handler.updateRole)
-	tag.Delete("/:id", handler.deleteRole)
+	public.Post("/roles", handler.createRole)
+	protected.Get("/roles", handler.getRoles)
+	protected.Get("/roles/:id", handler.getRoleById)
+	protected.Put("/roles/:id", handler.updateRole)
+	protected.Delete("/roles/:id", handler.deleteRole)
 }

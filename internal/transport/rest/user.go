@@ -79,16 +79,15 @@ func (h *UserHandler) deleteUser(c *fiber.Ctx) error {
 	})
 }
 
-func UserRoute(db *sqlx.DB, group fiber.Router) {
-	repo := repository.NewUserRepository(db)
-	//потребовалось создать еще одну ссылку на репозиторий
-	repo2 := repository.NewTariffRepository(db)
-	service := services.NewUserService(repo, repo2, 10*time.Second)
+func UserRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router, tariff_repo models.TariffRepository) *models.UserService {
+	user_repo := repository.NewUserRepository(db)
+	service := services.NewUserService(user_repo, tariff_repo, 10*time.Second)
 	handler := NewUserHandler(service)
 
-	tag := group.Group("/users")
-	tag.Post("/signup", handler.createUser)
-	tag.Get("", handler.getUsers)
-	tag.Get("/:id", handler.getUserById)
-	tag.Delete("/:id", handler.deleteUser)
+	public.Post("/users/signup", handler.createUser)
+	protected.Get("/users/", handler.getUsers)
+	protected.Get("/users/:id", handler.getUserById)
+	protected.Delete("/users/:id", handler.deleteUser)
+
+	return &service
 }

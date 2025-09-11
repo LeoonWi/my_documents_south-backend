@@ -92,15 +92,16 @@ func (h *TariffHandler) deleteTariff(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"id": id})
 }
 
-func TariffRoute(db *sqlx.DB, group fiber.Router) {
-	repo := repository.NewTariffRepository(db)
+func TariffRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router) (repo models.TariffRepository) {
+	repo = repository.NewTariffRepository(db)
 	service := services.NewTariffService(repo, 10*time.Second)
 	handler := NewTariffHandler(service)
 
-	tag := group.Group("/tariffs")
-	tag.Post("", handler.createTariff)
-	tag.Get("", handler.getTariffs)
-	tag.Get("/:id", handler.getTariffById)
-	tag.Put("/:id", handler.updateTariff)
-	tag.Delete("/:id", handler.deleteTariff)
+	public.Post("/tariffs", handler.createTariff)
+	protected.Get("/tariffs", handler.getTariffs)
+	protected.Get("/tariffs/:id", handler.getTariffById)
+	protected.Put("/tariffs/:id", handler.updateTariff)
+	protected.Delete("/tariffs/:id", handler.deleteTariff)
+
+	return
 }

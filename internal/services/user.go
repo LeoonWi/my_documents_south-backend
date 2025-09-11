@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"my_documents_south_backend/internal/middleware"
 	"my_documents_south_backend/internal/models"
+	"my_documents_south_backend/internal/utils/password"
 	"regexp"
 	"time"
 	"unicode"
@@ -44,7 +46,6 @@ func (s *userService) Create(c context.Context, user *models.User) error {
 		return errors.New("invalid password: must contain at least 6 characters")
 	}
 
-	// TODO тут вероятно можно использовать горутины
 	for _, ch := range user.Password {
 		if unicode.IsLetter(ch) {
 			hasLetter = true
@@ -57,21 +58,51 @@ func (s *userService) Create(c context.Context, user *models.User) error {
 		return errors.New("invalid password: must contain at least one letter and one digit")
 	}
 
-	id := 1
-	tariff := &models.Tariff{Id: id}
-	terr := s.tariffRepository.GetById(ctx, id, tariff)
-	if terr != nil {
-		return fmt.Errorf("failed to check default tariff: %w", terr)
+	var tariff models.Tariff
+	err := s.tariffRepository.GetDefault(ctx, &tariff)
+	if err != nil {
+		return fmt.Errorf("failed to check default tariff: %w", err)
 	}
 
-	// тариф по умолчанию (id = 1)
-	user.TariffId = id
+	user.TariffId = tariff.Id
 
-	err := s.userRepository.Create(ctx, user)
+	user.Password, err = password.Encrypt(user.Password)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt password: %w", err)
+	}
+
+	err = s.userRepository.Create(ctx, user)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *userService) Login(c context.Context, user *models.User) (string, string, error) {
+	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	defer cancel()
+
+	var user2 models.User
+	err := s.userRepository.GetByPhone(ctx, phonenumber.Parse(user.Phone, "RU"), &user2)
+	if err != nil {
+		return "", "", err
+	}
+
+	if err := password.Compare(user2.Password, user.Password); err != nil {
+		return "", "", err
+	}
+
+	accessToken, err := middleware.JWTGenerate(user2.Id, nil, time.Hour)
+	if err != nil {
+		return "", "", err
+	}
+
+	refreshToken, err := middleware.JWTGenerate(user2.Id, nil, time.Hour*24*7)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
 }
 
 func (s *userService) Get(c context.Context) *[]models.User {

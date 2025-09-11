@@ -85,6 +85,15 @@ func (r *userRepository) GetById(c context.Context, id int, user *models.User) e
 	return nil
 }
 
+func (r *userRepository) GetByPhone(c context.Context, phone string, user *models.User) error {
+	err := r.conn.GetContext(c, user, `SELECT * FROM "user" WHERE "phone" = $1`, phone)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *userRepository) Update(c context.Context, user *models.User) error {
 	// TODO update user repository
 	// DONT TOUCH

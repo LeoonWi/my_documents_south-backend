@@ -64,7 +64,7 @@ func (r *tariffRepository) SetDefault(c context.Context, id int) error {
 }
 
 func (r *tariffRepository) GetDefault(c context.Context, tariff *models.Tariff) error {
-	err := r.conn.GetContext(c, tariff, `SELECT * FROM "tariff" t WHERE t.id = setting.default_tariff_id`)
+	err := r.conn.GetContext(c, tariff, `SELECT * FROM "tariff" t WHERE t.id = (SELECT default_tariff_id FROM setting LIMIT 1)`)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"my_documents_south_backend/internal/interfaces"
 	"time"
 )
@@ -23,8 +24,10 @@ type Employee struct {
 
 type EmployeeRepository interface {
 	interfaces.EntityRepository[Employee]
+	GetByEmail(c context.Context, email string, employee *Employee) error
 }
 
 type EmployeeService interface {
 	interfaces.EntityService[Employee]
+	Login(context.Context, *Employee) (string, string, error)
 }

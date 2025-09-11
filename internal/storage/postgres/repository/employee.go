@@ -19,8 +19,8 @@ func NewEmployeeRepository(conn *sqlx.DB) models.EmployeeRepository {
 
 func (r *employeeRepository) Create(c context.Context, employee *models.Employee) error {
 	query := `
-		INSERT INTO "employee" (id, name, last_name, middle_name, email, password, role_id, active, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		INSERT INTO "employee" (name, last_name, middle_name, email, password, role_id, active)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING *
 	`
 
@@ -32,10 +32,9 @@ func (r *employeeRepository) Create(c context.Context, employee *models.Employee
 		employee.LastName,
 		employee.MiddleName,
 		employee.Email,
+		employee.Password,
 		employee.RoleId,
-		employee.Active,
-		employee.CreatedAt,
-		employee.UpdatedAt,
+		true,
 	)
 
 	if err != nil {
@@ -75,6 +74,15 @@ func (r *employeeRepository) Get(c context.Context, employee *[]models.Employee)
 
 func (r *employeeRepository) GetById(c context.Context, id int, employee *models.Employee) error {
 	err := r.conn.GetContext(c, employee, `SELECT * FROM "user" WHERE id = $1`, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *employeeRepository) GetByEmail(c context.Context, email string, employee *models.Employee) error {
+	err := r.conn.GetContext(c, employee, `SELECT * FROM "employee" WHERE "email" = $1`, email)
 	if err != nil {
 		return err
 	}

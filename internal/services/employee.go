@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"my_documents_south_backend/internal/middleware"
 	"my_documents_south_backend/internal/models"
+	"my_documents_south_backend/internal/utils/password"
 	"regexp"
 	"time"
 	"unicode"
@@ -48,21 +50,49 @@ func (s *employeeService) Create(c context.Context, employee *models.Employee) e
 		return errors.New("invalid password: must contain at least one letter and one digit")
 	}
 
-	id := 1
-	role := &models.Role{Id: id}
-	rerr := s.roleRepository.GetById(ctx, id, role)
-	if rerr != nil {
-		return fmt.Errorf("failed to check default role: %w", rerr)
+	var role models.Role
+	err := s.roleRepository.GetById(ctx, employee.RoleId, &role)
+	if err != nil {
+		return fmt.Errorf("failed to check default role: %w", err)
 	}
 
-	// роль по умолчанию (id = 1)
-	employee.RoleId = id
+	employee.Password, err = password.Encrypt(employee.Password)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt password: %w", err)
+	}
 
-	err := s.employeeRepository.Create(ctx, employee)
+	err = s.employeeRepository.Create(ctx, employee)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *employeeService) Login(c context.Context, employee *models.Employee) (string, string, error) {
+	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	defer cancel()
+
+	var employee2 models.Employee
+	err := s.employeeRepository.GetByEmail(ctx, employee.Email, &employee2)
+	if err != nil {
+		return "", "", err
+	}
+
+	if err := password.Compare(employee2.Password, employee.Password); err != nil {
+		return "", "", err
+	}
+
+	accessToken, err := middleware.JWTGenerate(employee2.Id, &employee2.RoleId, time.Hour)
+	if err != nil {
+		return "", "", err
+	}
+
+	refreshToken, err := middleware.JWTGenerate(employee2.Id, &employee2.RoleId, time.Hour*24*7)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
 }
 
 func (s *employeeService) Get(c context.Context) *[]models.Employee {
