@@ -18,13 +18,17 @@ func NewRequestRepository(db *sqlx.DB) models.RequestRepository {
 }
 
 func (r *requestRepository) Create(c context.Context, req *models.Request) error {
-	query := `
-        INSERT INTO "request" (name, service_id, owner_id, employee_id, priority, "desc", status, desired_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING *
-    `
+	query := `INSERT INTO "request" (name, service_id, owner_id, employee_id, priority, "desc", status, desired_at)
+        	  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        	  RETURNING *`
 
-	err := r.conn.GetContext(
+	// Начинаем транзакцию
+	tx, err := r.conn.Beginx()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	if err := tx.GetContext(
 		c,
 		req,
 		query,
@@ -36,11 +40,26 @@ func (r *requestRepository) Create(c context.Context, req *models.Request) error
 		req.Desc,
 		req.Status,
 		req.DesiredAt,
-	)
+	); err != nil {
+		// Отменяем транзакцию, в случае возникнования ошибки
+		if rollbackError := tx.Rollback(); rollbackError != nil {
+			return fmt.Errorf("failed to rollback transaction: %w", rollbackError)
+		}
 
-	if err != nil {
-		return err
+		// Декрементируем ID до актуальной последней записи
+		_, resetErr := r.conn.ExecContext(c, `SELECT setval('request_id_seq', (SELECT COALESCE(MAX(id), 0) FROM "request"))`)
+		if resetErr != nil {
+			return fmt.Errorf("failed to reset request: %w", resetErr)
+		}
+
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
+
+	// Применяем транзакцию
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
 	return nil
 }
 

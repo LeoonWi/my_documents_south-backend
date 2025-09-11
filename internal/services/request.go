@@ -8,12 +8,24 @@ import (
 )
 
 type requestService struct {
-	requestRepository models.RequestRepository
-	contextTimeout    time.Duration
+	requestRepository  models.RequestRepository
+	userRepository     models.UserRepository
+	employeeRepository models.EmployeeRepository
+	contextTimeout     time.Duration
 }
 
-func NewRequestService(requestRepository models.RequestRepository, contextTimeout time.Duration) models.RequestService {
-	return &requestService{requestRepository: requestRepository, contextTimeout: contextTimeout}
+func NewRequestService(
+	requestRepository models.RequestRepository,
+	userRepository models.UserRepository,
+	employeeRepository models.EmployeeRepository,
+	contextTimeout time.Duration,
+) models.RequestService {
+	return &requestService{
+		requestRepository:  requestRepository,
+		userRepository:     userRepository,
+		employeeRepository: employeeRepository,
+		contextTimeout:     contextTimeout,
+	}
 }
 
 func (s *requestService) Create(c context.Context, req *models.Request) error {
@@ -28,6 +40,7 @@ func (s *requestService) Create(c context.Context, req *models.Request) error {
 	return nil
 }
 
+// Get TODO
 func (s *requestService) Get(c context.Context) *[]models.Request { return nil }
 
 func (s *requestService) GetById(c context.Context, id int) (*models.Request, error) {
@@ -59,6 +72,7 @@ func (s *requestService) GetWithFilter(c context.Context, filter models.Request)
 	return req, nil
 }
 
+// Update TODO
 func (s *requestService) Update(c context.Context, id int, req *models.Request) error { return nil }
 
 func (s *requestService) Delete(c context.Context, id int) error {

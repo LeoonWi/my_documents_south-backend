@@ -25,7 +25,7 @@ func (h *RoleHandler) createRole(c *fiber.Ctx) error {
 	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(nil)
 	}
-	
+
 	var role models.Role
 
 	if err := c.BodyParser(&role); err != nil {
@@ -101,16 +101,18 @@ func (h *RoleHandler) deleteRole(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"id": id})
 }
 
-func RoleRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router) *models.RoleRepository {
+func RoleRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router) models.RoleRepository {
 	repo := repository.NewRoleRepository(db)
 	service := services.NewRoleService(repo, 10*time.Second)
 	handler := NewRoleHandler(service)
 
+	// OPEN
 	public.Post("/roles", handler.createRole)
+	// ONLY WITH JWT
 	protected.Get("/roles", handler.getRoles)
 	protected.Get("/roles/:id", handler.getRoleById)
 	protected.Put("/roles/:id", handler.updateRole)
 	protected.Delete("/roles/:id", handler.deleteRole)
 
-	return &repo
+	return repo
 }

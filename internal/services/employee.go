@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"my_documents_south_backend/internal/middleware"
 	"my_documents_south_backend/internal/models"
 	"my_documents_south_backend/internal/utils/password"
 	"regexp"
@@ -13,13 +12,21 @@ import (
 )
 
 type employeeService struct {
-	roleRepository     models.RoleRepository
 	employeeRepository models.EmployeeRepository
+	roleRepository     models.RoleRepository
 	contextTimeout     time.Duration
 }
 
-func NewEmployeeService(employeeRepository models.EmployeeRepository, roleRepository models.RoleRepository, contextTimeout time.Duration) models.EmployeeService {
-	return &employeeService{employeeRepository: employeeRepository, roleRepository: roleRepository, contextTimeout: contextTimeout}
+func NewEmployeeService(
+	employeeRepository models.EmployeeRepository,
+	roleRepository models.RoleRepository,
+	contextTimeout time.Duration,
+) models.EmployeeService {
+	return &employeeService{
+		employeeRepository: employeeRepository,
+		roleRepository:     roleRepository,
+		contextTimeout:     contextTimeout,
+	}
 }
 
 func (s *employeeService) Create(c context.Context, employee *models.Employee) error {
@@ -66,33 +73,6 @@ func (s *employeeService) Create(c context.Context, employee *models.Employee) e
 		return err
 	}
 	return nil
-}
-
-func (s *employeeService) Login(c context.Context, employee *models.Employee) (string, string, error) {
-	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
-	defer cancel()
-
-	var employee2 models.Employee
-	err := s.employeeRepository.GetByEmail(ctx, employee.Email, &employee2)
-	if err != nil {
-		return "", "", err
-	}
-
-	if err := password.Compare(employee2.Password, employee.Password); err != nil {
-		return "", "", err
-	}
-
-	accessToken, err := middleware.JWTGenerate(employee2.Id, &employee2.RoleId, time.Hour)
-	if err != nil {
-		return "", "", err
-	}
-
-	refreshToken, err := middleware.JWTGenerate(employee2.Id, &employee2.RoleId, time.Hour*24*7)
-	if err != nil {
-		return "", "", err
-	}
-
-	return accessToken, refreshToken, nil
 }
 
 func (s *employeeService) Get(c context.Context) *[]models.Employee {

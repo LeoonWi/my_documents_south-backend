@@ -120,17 +120,17 @@ func (h *RequestHandler) deleteRequest(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"id": id})
 }
 
-func RequestRoute(db *sqlx.DB, protected fiber.Router, user *models.UserService, employee *models.EmployeeService) {
+func RequestRoute(db *sqlx.DB, protected fiber.Router, user models.UserRepository, employee models.EmployeeRepository) {
 	repo := repository.NewRequestRepository(db)
-	service := services.NewRequestService(repo, 10*time.Second)
+	service := services.NewRequestService(repo, user, employee, 10*time.Second)
 
 	handler := NewRequestHandler(service)
 
-	//tag := group.Group("/request")
-	protected.Post("/request", handler.createRequest)
-	protected.Get("/request", handler.getRequestsWithFilter)
-	protected.Get("/request/:id", handler.getRequestById)
-	//protected.Patch("/request/:id/:employee_id", handler.deleteRequest)
-	//protected.Patch("/request/:id/:status", handler.deleteRequest)
-	protected.Delete("/request/:id", handler.deleteRequest)
+	tag := protected.Group("/request")
+	tag.Post("", handler.createRequest)
+	tag.Get("", handler.getRequestsWithFilter)
+	tag.Get("/:id", handler.getRequestById)
+	//tag.Patch("/:id/:employee_id", )
+	//tag.Patch("/:id/:status", )
+	tag.Delete("/:id", handler.deleteRequest)
 }

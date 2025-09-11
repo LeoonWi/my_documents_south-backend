@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"my_documents_south_backend/internal/models"
 
 	"github.com/jmoiron/sqlx"
@@ -17,9 +18,28 @@ func NewRoleRepository(db *sqlx.DB) models.RoleRepository {
 }
 
 func (r *roleRepository) Create(c context.Context, role *models.Role) error {
-	err := r.conn.GetContext(c, role, "INSERT INTO role (name) VALUES ($1) RETURNING *", role.Name)
+	tx, err := r.conn.Beginx()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	if err := tx.GetContext(c, role, "INSERT INTO role (name) VALUES ($1) RETURNING *", role.Name); err != nil {
+		// Отменяем транзакцию, в случае возникнования ошибки
+		if rollbackError := tx.Rollback(); rollbackError != nil {
+			return fmt.Errorf("failed to rollback transaction: %w", rollbackError)
+		}
+		// Декрементируем ID до актуальной последней записи
+		_, resetErr := r.conn.ExecContext(c, `SELECT setval('role_id_seq', (SELECT COALESCE(MAX(id), 0) FROM role))`)
+		if resetErr != nil {
+			return fmt.Errorf("failed to reset role: %w", resetErr)
+		}
+
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	// Применяем транзакцию
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil

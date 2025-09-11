@@ -31,5 +31,4 @@ type UserRepository interface {
 
 type UserService interface {
 	interfaces.EntityService[User]
-	Login(context.Context, *User) (string, string, error)
 }

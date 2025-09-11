@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"my_documents_south_backend/internal/models"
 
 	"github.com/jmoiron/sqlx"
@@ -17,10 +18,30 @@ func NewTariffRepository(db *sqlx.DB) models.TariffRepository {
 }
 
 func (r *tariffRepository) Create(c context.Context, tariff *models.Tariff) error {
-	err := r.conn.GetContext(c, tariff, "INSERT INTO tariff (name) VALUES ($1) returning *", tariff.Name)
+	tx, err := r.conn.Beginx()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
+
+	if err := tx.GetContext(c, tariff, "INSERT INTO tariff (name) VALUES ($1) returning *", tariff.Name); err != nil {
+		// Отменяем транзакцию, в случае возникнования ошибки
+		if rollbackError := tx.Rollback(); rollbackError != nil {
+			return fmt.Errorf("failed to rollback transaction: %w", rollbackError)
+		}
+		// Декрементируем ID до актуальной последней записи
+		_, resetErr := r.conn.ExecContext(c, `SELECT setval('tariff_id_seq', (SELECT COALESCE(MAX(id), 0) FROM tariff))`)
+		if resetErr != nil {
+			return fmt.Errorf("failed to reset tariff: %w", resetErr)
+		}
+
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	// Применяем транзакцию
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
 	return nil
 }
 
