@@ -114,8 +114,18 @@ func (r *userRepository) Update(c context.Context, user *models.User) error {
 }
 
 func (r *userRepository) Delete(c context.Context, id int) error {
-	if _, err := r.conn.ExecContext(c, `DELETE FROM "user" WHERE id=$1`, id); err != nil {
-		return errors.New("failed to delete user")
+	result, err := r.conn.ExecContext(c, `DELETE FROM "user" WHERE id=$1`, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("user not found")
 	}
 	return nil
 }

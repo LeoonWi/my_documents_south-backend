@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"my_documents_south_backend/internal/models"
 
@@ -106,9 +107,18 @@ func (r *employeeRepository) GetByEmail(c context.Context, email string, employe
 func (r *employeeRepository) Update(c context.Context, employee *models.Employee) error { return nil }
 
 func (r *employeeRepository) Delete(c context.Context, id int) error {
-	_, err := r.conn.ExecContext(c, `DELETE FROM "employee" WHERE id=$1`, id)
+	result, err := r.conn.ExecContext(c, `DELETE FROM "employee" WHERE id=$1`, id)
 	if err != nil {
-		return fmt.Errorf("failed to delete employee: %w", err)
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("employee not found")
 	}
 	return nil
 }
