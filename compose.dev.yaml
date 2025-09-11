@@ -13,6 +13,17 @@ services:
     ports:
       - "5433:5432"
 
+  dbms:
+    container_name: "mds_php_pg_admin"
+    image: dockage/phppgadmin:latest
+    environment:
+      PHP_PG_ADMIN_SERVER_HOST: postgres
+      PHP_PG_ADMIN_SERVER_PORT: 5432
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:
     name: postgres_data
