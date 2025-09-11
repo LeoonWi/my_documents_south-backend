@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"my_documents_south_backend/internal/middleware"
 	"my_documents_south_backend/internal/models"
 	"my_documents_south_backend/internal/utils/password"
 	"regexp"
@@ -15,8 +14,8 @@ import (
 )
 
 type userService struct {
-	tariffRepository models.TariffRepository
 	userRepository   models.UserRepository
+	tariffRepository models.TariffRepository
 	contextTimeout   time.Duration
 }
 
@@ -75,34 +74,8 @@ func (s *userService) Create(c context.Context, user *models.User) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
-}
-
-func (s *userService) Login(c context.Context, user *models.User) (string, string, error) {
-	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
-	defer cancel()
-
-	var user2 models.User
-	err := s.userRepository.GetByPhone(ctx, phonenumber.Parse(user.Phone, "RU"), &user2)
-	if err != nil {
-		return "", "", err
-	}
-
-	if err := password.Compare(user2.Password, user.Password); err != nil {
-		return "", "", err
-	}
-
-	accessToken, err := middleware.JWTGenerate(user2.Id, nil, time.Hour)
-	if err != nil {
-		return "", "", err
-	}
-
-	refreshToken, err := middleware.JWTGenerate(user2.Id, nil, time.Hour*24*7)
-	if err != nil {
-		return "", "", err
-	}
-
-	return accessToken, refreshToken, nil
 }
 
 func (s *userService) Get(c context.Context) *[]models.User {

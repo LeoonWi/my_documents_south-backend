@@ -78,15 +78,17 @@ func (h *EmployeeHandler) deleteEmployee(c *fiber.Ctx) error {
 	})
 }
 
-func EmployeeRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router, roleRepo *models.RoleRepository) *models.EmployeeService {
+func EmployeeRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router, roleRepo models.RoleRepository) models.EmployeeRepository {
 	repo := repository.NewEmployeeRepository(db)
-	service := services.NewEmployeeService(repo, *roleRepo, 10*time.Second)
+	service := services.NewEmployeeService(repo, roleRepo, 10*time.Second)
 	handler := NewEmployeeHandler(service)
 
+	// OPEN /pub
 	public.Post("/employee/signup", handler.createEmployee)
+	// ONLY WITH JWT /prot
 	protected.Get("/employee", handler.getEmployee)
 	protected.Get("/employee/:id", handler.getEmployeeById)
 	protected.Delete("/employee/:id", handler.deleteEmployee)
 
-	return &service
+	return repo
 }

@@ -29,5 +29,4 @@ type EmployeeRepository interface {
 
 type EmployeeService interface {
 	interfaces.EntityService[Employee]
-	Login(context.Context, *Employee) (string, string, error)
 }

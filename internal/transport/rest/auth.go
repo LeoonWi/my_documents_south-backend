@@ -2,24 +2,22 @@ package rest
 
 import (
 	"errors"
-	"my_documents_south_backend/internal/middleware"
 	"my_documents_south_backend/internal/models"
+	"my_documents_south_backend/internal/services"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 )
 
-type Auth struct {
-	userService     models.UserService
-	employeeService models.EmployeeService
+type AuthHandler struct {
+	authService *services.AuthService
 }
 
-func NewAuthHander(userService models.UserService, employeeService models.EmployeeService) *Auth {
-	return &Auth{employeeService: employeeService, userService: userService}
+func NewAuthHander(authService *services.AuthService) *AuthHandler {
+	return &AuthHandler{authService: authService}
 }
 
-func (h *Auth) loginUser(c *fiber.Ctx) error {
+func (h *AuthHandler) loginUser(c *fiber.Ctx) error {
 	var user models.User
 
 	if err := c.BodyParser(&user); err != nil {
@@ -27,24 +25,19 @@ func (h *Auth) loginUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(res)
 	}
 
-	accessToken, refreshToken, err := h.userService.Login(c.Context(), &user)
+	token, err := h.authService.LoginUser(c.Context(), &user)
 	if err != nil {
 		res := models.NewErrorResponse(err, c.Path()).Log()
 		return c.Status(fiber.StatusConflict).JSON(res)
 	}
 
-	return c.JSON(fiber.Map{"access_token": accessToken, "refresh_token": refreshToken})
+	return c.JSON(token)
 }
 
-func (h *Auth) refreshToken(c *fiber.Ctx) error {
-	var newAccessToken string
-	var newRefreshToken string
-
-	// Получаем refresh token из тела запроса или cookie
-	var request struct {
-		RefreshToken string `json:"refresh_token"`
-	}
-	if err := c.BodyParser(&request); err != nil {
+func (h *AuthHandler) refreshToken(c *fiber.Ctx) error {
+	// Получаем ТОЛЬКО refresh_token
+	var token models.JwtToken
+	if err := c.BodyParser(&token); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Invalid request body",
@@ -52,77 +45,26 @@ func (h *Auth) refreshToken(c *fiber.Ctx) error {
 		})
 	}
 
-	// Парсим и проверяем refresh token
-	token, err := jwt.Parse(request.RefreshToken, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fiber.ErrUnauthorized
-		}
-		return []byte("my_documents_south_jwt_super_secret_key_for_security"), nil
-	})
-
-	if err != nil || !token.Valid {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Invalid or expired refresh token",
-			"data":    nil,
-		})
-	}
-
 	userID, ok := c.Locals("userID").(int64)
 	if !ok {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Invalid user ID in token",
-			"data":    nil,
-		})
+		return c.Status(fiber.StatusUnauthorized).JSON(models.NewErrorResponse(errors.New("invalid user ID in token"), c.Path()).Log())
 	}
 
-	roleID, ok := c.Locals("roleID").(int)
-	if !ok {
-		newAccessToken, err = middleware.JWTGenerate(userID, nil, time.Hour)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"status":  "error",
-				"message": "Failed to generate access token",
-				"data":    nil,
-			})
-		}
-
-		newRefreshToken, err = middleware.JWTGenerate(userID, nil, 7*24*time.Hour)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"status":  "error",
-				"message": "Failed to generate refresh token",
-				"data":    nil,
-			})
-		}
-	} else {
-		newAccessToken, err = middleware.JWTGenerate(userID, &roleID, time.Hour)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"status":  "error",
-				"message": "Failed to generate access token",
-				"data":    nil,
-			})
-		}
-
-		newRefreshToken, err = middleware.JWTGenerate(userID, &roleID, 7*24*time.Hour)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"status":  "error",
-				"message": "Failed to generate refresh token",
-				"data":    nil,
-			})
-		}
+	roleInt, ok := c.Locals("roleID").(int)
+	var roleID *int = nil
+	if ok {
+		roleID = &roleInt
 	}
 
-	return c.JSON(fiber.Map{
-		"access_token":  newAccessToken,
-		"refresh_token": newRefreshToken,
-	})
+	if err := h.authService.RefreshToken(userID, roleID, &token); err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusUnauthorized).JSON(res)
+	}
+
+	return c.JSON(&token)
 }
 
-func (h *Auth) loginEmployee(c *fiber.Ctx) error {
+func (h *AuthHandler) loginEmployee(c *fiber.Ctx) error {
 	var employee models.Employee
 
 	if err := c.BodyParser(&employee); err != nil {
@@ -130,22 +72,23 @@ func (h *Auth) loginEmployee(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(res)
 	}
 
-	accessToken, refreshToken, err := h.employeeService.Login(c.Context(), &employee)
+	token, err := h.authService.LoginEmployee(c.Context(), &employee)
 	if err != nil {
 		res := models.NewErrorResponse(err, c.Path()).Log()
 		return c.Status(fiber.StatusConflict).JSON(res)
 	}
 
-	return c.JSON(fiber.Map{"access_token": accessToken, "refresh_token": refreshToken})
+	return c.JSON(token)
 }
 
 func AuthRouter(
 	public fiber.Router,
 	protected fiber.Router,
-	userService *models.UserService,
-	employeeService *models.EmployeeService,
+	userService models.UserRepository,
+	employeeService models.EmployeeRepository,
 ) {
-	handler := NewAuthHander(*userService, *employeeService)
+	service := services.NewAuthService(employeeService, userService, 10*time.Second)
+	handler := NewAuthHander(service)
 
 	public.Post("/users/signin", handler.loginUser)
 	public.Post("/employee/signin", handler.loginEmployee)

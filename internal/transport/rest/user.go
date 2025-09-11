@@ -79,9 +79,9 @@ func (h *UserHandler) deleteUser(c *fiber.Ctx) error {
 	})
 }
 
-func UserRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router, tariff_repo models.TariffRepository) *models.UserService {
-	user_repo := repository.NewUserRepository(db)
-	service := services.NewUserService(user_repo, tariff_repo, 10*time.Second)
+func UserRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router, tariffRepo models.TariffRepository) models.UserRepository {
+	userRepo := repository.NewUserRepository(db)
+	service := services.NewUserService(userRepo, tariffRepo, 10*time.Second)
 	handler := NewUserHandler(service)
 
 	public.Post("/users/signup", handler.createUser)
@@ -89,5 +89,5 @@ func UserRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router, tariff_
 	protected.Get("/users/:id", handler.getUserById)
 	protected.Delete("/users/:id", handler.deleteUser)
 
-	return &service
+	return userRepo
 }
