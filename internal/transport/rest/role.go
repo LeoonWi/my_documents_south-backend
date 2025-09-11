@@ -21,6 +21,11 @@ func NewRoleHandler(roleService models.RoleService) *RoleHandler {
 }
 
 func (h *RoleHandler) createRole(c *fiber.Ctx) error {
+	_, ok := c.Locals("roleID").(int)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(nil)
+	}
+	
 	var role models.Role
 
 	if err := c.BodyParser(&role); err != nil {

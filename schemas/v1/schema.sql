@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS "request" (
 	"status" SMALLINT NOT NULL,
 	"created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	"updated_at" TIMESTAMPTZ,
-	"desired_at" TIMESTAMPTZ,
+	"desired_at" TIMESTAMPTZ NOT NULL,
 	"closed_at" TIMESTAMPTZ
 );
 
