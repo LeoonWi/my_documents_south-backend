@@ -78,11 +78,10 @@ func (h *EmployeeHandler) deleteEmployee(c *fiber.Ctx) error {
 	})
 }
 
-func EmployeeRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router) *models.EmployeeService {
+func EmployeeRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router, roleRepo *models.RoleRepository) *models.EmployeeService {
 	repo := repository.NewEmployeeRepository(db)
 
-	// repo2 := repository.NewRoleRepository(db)
-	service := services.NewEmployeeService(repo, 10*time.Second)
+	service := services.NewEmployeeService(repo, *roleRepo, 10*time.Second)
 	handler := NewEmployeeHandler(service)
 
 	public.Post("/employee/signup", handler.createEmployee)

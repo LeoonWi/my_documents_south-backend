@@ -96,7 +96,7 @@ func (h *RoleHandler) deleteRole(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"id": id})
 }
 
-func RoleRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router) {
+func RoleRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router) *models.RoleRepository {
 	repo := repository.NewRoleRepository(db)
 	service := services.NewRoleService(repo, 10*time.Second)
 	handler := NewRoleHandler(service)
@@ -106,4 +106,6 @@ func RoleRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router) {
 	protected.Get("/roles/:id", handler.getRoleById)
 	protected.Put("/roles/:id", handler.updateRole)
 	protected.Delete("/roles/:id", handler.deleteRole)
+
+	return &repo
 }
