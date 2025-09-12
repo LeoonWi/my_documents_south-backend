@@ -3,8 +3,8 @@ package rest
 import (
 	"errors"
 	"my_documents_south_backend/internal/models"
+	"my_documents_south_backend/internal/repository/postgres/repository"
 	"my_documents_south_backend/internal/services"
-	"my_documents_south_backend/internal/storage/postgres/repository"
 	"time"
 
 	"github.com/gofiber/fiber/v2"

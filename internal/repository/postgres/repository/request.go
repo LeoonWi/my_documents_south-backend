@@ -66,7 +66,23 @@ func (r *requestRepository) Create(c context.Context, req *models.Request) error
 func (r *requestRepository) Get(c context.Context, req *[]models.Request) error { return nil }
 
 func (r *requestRepository) GetById(c context.Context, id int, req *models.Request) error {
-	err := r.conn.GetContext(c, req, `SELECT * FROM "request" WHERE id = $1`, id)
+	query := `
+		SELECT 
+			r.id,
+			r.owner_id,
+			r.employee_id,
+			r.status,
+			r.desc,
+			r.desired_at,
+			r.created_at,
+			r.updated_at,
+			s.id   AS "service.id",
+			s.name AS "service.name"
+		FROM "request" r
+		LEFT JOIN "service" s ON r.service_id = s.id
+		WHERE r.id=$1
+	`
+	err := r.conn.GetContext(c, req, query, id)
 	if err != nil {
 		return err
 	}
@@ -75,7 +91,22 @@ func (r *requestRepository) GetById(c context.Context, id int, req *models.Reque
 }
 
 func (r *requestRepository) GetWithFilter(ctx context.Context, req *[]models.Request, filter models.Request) error {
-	query := `SELECT * FROM "request" WHERE 1=1`
+	query := `
+		SELECT 
+			r.id,
+			r.owner_id,
+			r.employee_id,
+			r.status,
+			r.desc,
+			r.desired_at,
+			r.created_at,
+			r.updated_at,
+			s.id   AS "service.id",
+			s.name AS "service.name"
+		FROM "request" r
+		LEFT JOIN "service" s ON r.service_id = s.id
+		WHERE 1=1
+	`
 
 	args := []interface{}{}
 	i := 1
@@ -95,9 +126,9 @@ func (r *requestRepository) GetWithFilter(ctx context.Context, req *[]models.Req
 		args = append(args, filter.DesiredAt)
 		i++
 	}
-	if !filter.DesiredAt.IsZero() {
-		query += fmt.Sprintf(" AND status <= $%d", i)
-		args = append(args, filter.DesiredAt)
+	if filter.Status != 0 {
+		query += fmt.Sprintf(" AND status = $%d", i)
+		args = append(args, filter.Status)
 		i++
 	}
 	if filter.EmployeeId != 0 {
@@ -115,6 +146,18 @@ func (r *requestRepository) GetWithFilter(ctx context.Context, req *[]models.Req
 }
 
 func (r *requestRepository) Update(c context.Context, req *models.Request) error { return nil }
+
+func (r *requestRepository) UpdateEmployee(ctx context.Context, id int64, employee_id int64) error {
+	query := `UPDATE request SET employee_id = $1 WHERE id = $2`
+	_, err := r.conn.ExecContext(ctx, query, employee_id, id)
+	return err
+}
+
+func (r *requestRepository) UpdateStatus(ctx context.Context, id int64, status int16) error {
+	query := `UPDATE request SET status = $1 WHERE id = $2`
+	_, err := r.conn.ExecContext(ctx, query, status, id)
+	return err
+}
 
 func (r *requestRepository) Delete(c context.Context, id int) error {
 	result, err := r.conn.ExecContext(c, `DELETE FROM "request" WHERE id=$1`, id)

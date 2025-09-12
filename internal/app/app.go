@@ -1,7 +1,7 @@
 package app
 
 import (
-	"my_documents_south_backend/internal/storage/postgres"
+	"my_documents_south_backend/internal/repository/postgres"
 	"my_documents_south_backend/internal/transport/rest"
 
 	"github.com/bytedance/sonic"
