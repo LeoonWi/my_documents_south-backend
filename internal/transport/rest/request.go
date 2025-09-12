@@ -3,8 +3,8 @@ package rest
 import (
 	"errors"
 	"my_documents_south_backend/internal/models"
+	"my_documents_south_backend/internal/repository/postgres/repository"
 	"my_documents_south_backend/internal/services"
-	"my_documents_south_backend/internal/storage/postgres/repository"
 	"strconv"
 	"time"
 
@@ -104,6 +104,60 @@ func (h *RequestHandler) getRequestsWithFilter(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(requests)
 }
 
+func (h *RequestHandler) updateRequestEmployee(c *fiber.Ctx) error {
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request id"})
+	}
+
+	type payload struct {
+		EmployeeId int64 `json:"employee_id"`
+	}
+
+	var body payload
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid body"})
+	}
+
+	if body.EmployeeId == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "employee_id is required"})
+	}
+
+	if err := h.requestService.UpdateEmployee(c.Context(), id, body.EmployeeId); err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusInternalServerError).JSON(res)
+	}
+
+	return c.SendStatus(fiber.StatusOK)
+}
+
+func (h *RequestHandler) updateRequestStatus(c *fiber.Ctx) error {
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request id"})
+	}
+
+	type payload struct {
+		Status int16 `json:"status"`
+	}
+
+	var body payload
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid body"})
+	}
+
+	if body.Status == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "status is required"})
+	}
+
+	if err := h.requestService.UpdateStatus(c.Context(), id, body.Status); err != nil {
+		res := models.NewErrorResponse(err, c.Path()).Log()
+		return c.Status(fiber.StatusInternalServerError).JSON(res)
+	}
+
+	return c.SendStatus(fiber.StatusOK)
+}
+
 func (h *RequestHandler) deleteRequest(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
@@ -130,7 +184,7 @@ func RequestRoute(db *sqlx.DB, protected fiber.Router, user models.UserRepositor
 	tag.Post("", handler.createRequest)
 	tag.Get("", handler.getRequestsWithFilter)
 	tag.Get("/:id", handler.getRequestById)
-	//tag.Patch("/:id/:employee_id", )
-	//tag.Patch("/:id/:status", )
+	tag.Patch("/:id/employee", handler.updateRequestEmployee)
+	tag.Patch("/:id/status", handler.updateRequestStatus)
 	tag.Delete("/:id", handler.deleteRequest)
 }

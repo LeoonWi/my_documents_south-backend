@@ -30,8 +30,12 @@ type Request struct {
 type RequestRepository interface {
 	interfaces.EntityRepository[Request]
 	GetWithFilter(ctx context.Context, i *[]Request, filter Request) error
+	UpdateEmployee(ctx context.Context, id int64, employeeId int64) error
+	UpdateStatus(ctx context.Context, id int64, status int16) error
 }
 type RequestService interface {
 	interfaces.EntityService[Request]
 	GetWithFilter(ctx context.Context, filter Request) ([]Request, error)
+	UpdateEmployee(ctx context.Context, id int64, employeeId int64) error
+	UpdateStatus(ctx context.Context, id int64, status int16) error
 }

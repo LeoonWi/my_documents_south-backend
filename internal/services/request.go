@@ -56,6 +56,21 @@ func (s *requestService) GetById(c context.Context, id int) (*models.Request, er
 	if err != nil {
 		return nil, err
 	}
+
+	if req.OwnerId != 0 {
+		user := &models.User{}
+		if err := s.userRepository.GetById(ctx, int(req.OwnerId), user); err == nil {
+			req.User = user
+		}
+	}
+
+	if req.EmployeeId != 0 {
+		employee := &models.Employee{}
+		if err := s.employeeRepository.GetById(ctx, int(req.EmployeeId), employee); err == nil {
+			req.Employee = employee
+		}
+	}
+
 	return req, nil
 }
 
@@ -63,17 +78,46 @@ func (s *requestService) GetWithFilter(c context.Context, filter models.Request)
 	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
 	defer cancel()
 
-	var req []models.Request
-	err := s.requestRepository.GetWithFilter(ctx, &req, filter)
+	var requests []models.Request
+	err := s.requestRepository.GetWithFilter(ctx, &requests, filter)
 	if err != nil {
 		return nil, err
 	}
 
-	return req, nil
+	for i := range requests {
+		req := &requests[i]
+
+		user := &models.User{}
+		if err := s.userRepository.GetById(ctx, int(req.OwnerId), user); err == nil {
+			req.User = user
+		}
+
+		employee := &models.Employee{}
+		if err := s.employeeRepository.GetById(ctx, int(req.EmployeeId), employee); err == nil {
+			req.Employee = employee
+		}
+
+	}
+
+	return requests, nil
 }
 
 // Update TODO
 func (s *requestService) Update(c context.Context, id int, req *models.Request) error { return nil }
+
+func (s *requestService) UpdateEmployee(ctx context.Context, id int64, employee_id int64) error {
+	ctx, cancel := context.WithTimeout(ctx, s.contextTimeout)
+	defer cancel()
+
+	return s.requestRepository.UpdateEmployee(ctx, id, employee_id)
+}
+
+func (s *requestService) UpdateStatus(ctx context.Context, id int64, status int16) error {
+	ctx, cancel := context.WithTimeout(ctx, s.contextTimeout)
+	defer cancel()
+
+	return s.requestRepository.UpdateStatus(ctx, id, status)
+}
 
 func (s *requestService) Delete(c context.Context, id int) error {
 	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
