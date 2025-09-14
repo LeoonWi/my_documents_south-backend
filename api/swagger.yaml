@@ -759,7 +759,7 @@ paths:
 
   /prot/request/{id}/employee:
     patch:
-      summary: Изменить заявку по ID сотрудника
+      summary: Прикрепить/открепить исполнителя от заявки
       tags: [ Request ]
       parameters:
         - name: id
@@ -805,7 +805,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /prot/request/{id}/status:
     patch:
-      summary: Изменить заявку по статусу
+      summary: Изменить статус заявки
       tags: [ Request ]
       parameters:
         - name: id
