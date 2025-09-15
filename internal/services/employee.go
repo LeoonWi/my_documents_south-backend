@@ -75,32 +75,10 @@ func (s *employeeService) Create(c context.Context, employee *models.Employee) e
 	return nil
 }
 
-func (s *employeeService) Get(c context.Context) *[]models.Employee {
-	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
-	defer cancel()
-
-	var employee []models.Employee
-	err := s.employeeRepository.Get(ctx, &employee)
-	if err != nil {
-		return nil
-	}
-	return &employee
-}
+func (s *employeeService) Get(c context.Context) *[]models.Employee { return nil }
 
 func (s *employeeService) GetById(c context.Context, id int) (*models.Employee, error) {
-	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
-	defer cancel()
-
-	if id < 1 {
-		return nil, errors.New("invalid id")
-	}
-
-	employee := &models.Employee{Id: int64(id)}
-	err := s.employeeRepository.GetById(ctx, id, employee)
-	if err != nil {
-		return nil, err
-	}
-	return employee, nil
+	return nil, nil
 }
 
 func (s *employeeService) Update(c context.Context, id int, employee *models.Employee) error {
@@ -114,4 +92,32 @@ func (s *employeeService) Delete(c context.Context, id int) error {
 	defer cancel()
 
 	return s.employeeRepository.Delete(ctx, id)
+}
+
+func (s *employeeService) AddService(ctx context.Context, employeeID int64, serviceID int) error {
+	ctx, cancel := context.WithTimeout(ctx, s.contextTimeout)
+	defer cancel()
+
+	return s.employeeRepository.AddService(ctx, employeeID, serviceID)
+}
+
+func (s *employeeService) RemoveService(ctx context.Context, employeeID int64, serviceID int) error {
+	ctx, cancel := context.WithTimeout(ctx, s.contextTimeout)
+	defer cancel()
+
+	return s.employeeRepository.RemoveService(ctx, employeeID, serviceID)
+}
+
+func (s *employeeService) GetByIdWithServices(ctx context.Context, id int64) (*models.Employee, error) {
+	ctx, cancel := context.WithTimeout(ctx, s.contextTimeout)
+	defer cancel()
+
+	return s.employeeRepository.GetByIdWithServices(ctx, id)
+}
+
+func (s *employeeService) GetAllWithServices(ctx context.Context) ([]models.Employee, error) {
+	ctx, cancel := context.WithTimeout(ctx, s.contextTimeout)
+	defer cancel()
+
+	return s.employeeRepository.GetAllWithServices(ctx)
 }
