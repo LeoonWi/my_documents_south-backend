@@ -5,6 +5,7 @@ import (
 	"my_documents_south_backend/internal/models"
 	"my_documents_south_backend/internal/repository/postgres/repository"
 	"my_documents_south_backend/internal/services"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -35,25 +36,26 @@ func (h *EmployeeHandler) createEmployee(c *fiber.Ctx) error {
 
 	return c.SendStatus(fiber.StatusCreated)
 }
-
 func (h *EmployeeHandler) getEmployee(c *fiber.Ctx) error {
-	return c.JSON(h.employeeService.Get(c.Context()))
+	employees, err := h.employeeService.GetAllWithServices(c.Context())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(employees)
 }
-
 func (h *EmployeeHandler) getEmployeeById(c *fiber.Ctx) error {
-	id, err := c.ParamsInt("id", 0)
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
 	if err != nil {
-		res := models.NewErrorResponse(err, c.Path()).Log()
-		return c.Status(fiber.StatusBadRequest).JSON(res)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid employee id"})
 	}
 
-	employee, err := h.employeeService.GetById(c.Context(), id)
+	employee, err := h.employeeService.GetByIdWithServices(c.Context(), id)
 	if err != nil {
-		res := models.NewErrorResponse(err, c.Path()).Log()
-		return c.Status(fiber.StatusNotFound).JSON(res)
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "employee not found"})
 	}
 
-	return c.JSON(employee)
+	return c.Status(fiber.StatusOK).JSON(employee)
 }
 
 func (h *EmployeeHandler) deleteEmployee(c *fiber.Ctx) error {
@@ -73,9 +75,48 @@ func (h *EmployeeHandler) deleteEmployee(c *fiber.Ctx) error {
 		return c.Status(status).JSON(res)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"id": id,
-	})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"id": id})
+}
+
+func (h *EmployeeHandler) addService(c *fiber.Ctx) error {
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid employee id"})
+	}
+
+	var body struct {
+		ServiceId int `json:"service_id"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid body"})
+	}
+
+	if body.ServiceId == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "service_id is required"})
+	}
+
+	if err := h.employeeService.AddService(c.Context(), id, body.ServiceId); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.SendStatus(fiber.StatusCreated)
+}
+func (h *EmployeeHandler) removeService(c *fiber.Ctx) error {
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid employee id"})
+	}
+
+	serviceId, err := strconv.Atoi(c.Params("service_id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid service id"})
+	}
+
+	if err := h.employeeService.RemoveService(c.Context(), id, serviceId); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func EmployeeRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router, roleRepo models.RoleRepository) models.EmployeeRepository {
@@ -89,6 +130,7 @@ func EmployeeRoute(db *sqlx.DB, public fiber.Router, protected fiber.Router, rol
 	protected.Get("/employee", handler.getEmployee)
 	protected.Get("/employee/:id", handler.getEmployeeById)
 	protected.Delete("/employee/:id", handler.deleteEmployee)
-
+	protected.Post("/employee/:id/service", handler.addService)
+	protected.Delete("/employee/:id/service/:service_id", handler.removeService)
 	return repo
 }

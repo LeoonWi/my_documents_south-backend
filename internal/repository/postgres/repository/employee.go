@@ -63,34 +63,9 @@ func (r *employeeRepository) Create(c context.Context, employee *models.Employee
 	return nil
 }
 
-func (r *employeeRepository) Get(c context.Context, employee *[]models.Employee) error {
-	query := `SELECT
-				e.id,
-				e.name,
-				e.last_name,
-				e.middle_name,
-				e.email,
-				e.password,
-				e.active,
-				e.created_at,
-				e.updated_at,
-				r.id AS "role.id",
-				r.name AS "role.name"
-			FROM "employee" e
-			LEFT JOIN "role" r ON e.role_id = r.id`
-
-	err := r.conn.SelectContext(c, employee, query)
-	if err != nil {
-		return fmt.Errorf("failed to get employee: %w", err)
-	}
-	return nil
-}
+func (r *employeeRepository) Get(c context.Context, employee *[]models.Employee) error { return nil }
 
 func (r *employeeRepository) GetById(c context.Context, id int, employee *models.Employee) error {
-	err := r.conn.GetContext(c, employee, `SELECT * FROM "user" WHERE id = $1`, id)
-	if err != nil {
-		return fmt.Errorf("failed to get employee: %w", err)
-	}
 	return nil
 }
 
@@ -121,4 +96,74 @@ func (r *employeeRepository) Delete(c context.Context, id int) error {
 		return errors.New("employee not found")
 	}
 	return nil
+}
+
+func (r *employeeRepository) AddService(c context.Context, employee_id int64, service_id int) error {
+	query := `INSERT INTO employee_specs (employee_id, service_id) VALUES ($1, $2) ON CONFLICT (employee_id, service_id) DO NOTHING;`
+	_, err := r.conn.ExecContext(c, query, employee_id, service_id)
+	return err
+}
+
+func (r *employeeRepository) RemoveService(c context.Context, employee_id int64, service_id int) error {
+	query := `DELETE FROM employee_specs WHERE employee_id = $1 AND service_id = $2;`
+	_, err := r.conn.ExecContext(c, query, employee_id, service_id)
+	return err
+}
+
+func (r *employeeRepository) GetByIdWithServices(ctx context.Context, id int64) (*models.Employee, error) {
+	employee := models.Employee{}
+	queryEmp := `SELECT * FROM employee WHERE id = $1`
+	if err := r.conn.GetContext(ctx, &employee, queryEmp, id); err != nil {
+		return nil, err
+	}
+
+	querySrv := `
+        SELECT s.id, s.name FROM service s
+        INNER JOIN employee_specs es ON es.service_id = s.id
+        WHERE es.employee_id = $1
+    `
+	services := []models.Service{}
+	if err := r.conn.SelectContext(ctx, &services, querySrv, id); err != nil {
+		return nil, err
+	}
+	employee.Services = services
+
+	return &employee, nil
+}
+
+func (r *employeeRepository) GetAllWithServices(ctx context.Context) ([]models.Employee, error) {
+	employees := []models.Employee{}
+	query := `SELECT
+				e.id,
+				e.name,
+				e.last_name,
+				e.middle_name,
+				e.email,
+				e.password,
+				e.active,
+				e.created_at,
+				e.updated_at,
+				r.id AS "role.id",
+				r.name AS "role.name"
+			FROM "employee" e
+			LEFT JOIN "role" r ON e.role_id = r.id`
+
+	if err := r.conn.SelectContext(ctx, &employees, query); err != nil {
+		return nil, err
+	}
+
+	for i := range employees {
+		querySrv := `
+            SELECT s.id, s.name FROM service s
+            INNER JOIN employee_specs es ON es.service_id = s.id
+            WHERE es.employee_id = $1
+        `
+		services := []models.Service{}
+		if err := r.conn.SelectContext(ctx, &services, querySrv, employees[i].Id); err != nil {
+			return nil, err
+		}
+		employees[i].Services = services
+	}
+
+	return employees, nil
 }
