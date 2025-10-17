@@ -14,7 +14,7 @@ func dieIf(err error) {
 }
 
 func Connect() *sqlx.DB {
-	cfg := "host=localhost port=5433 user=mds_user password=zxcvbn dbname=mds sslmode=disable"
+	cfg := "host=localhost port=5433 user=postgres password=qjfnn54kkd9o3 dbname=mds sslmode=disable"
 	db, err := sqlx.Connect("pgx", cfg)
 	dieIf(err)
 
